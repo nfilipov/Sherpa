@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(10000)
 )
 
 # Input source
@@ -42,16 +42,16 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 
 process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
-    splitLevel = cms.untracked.int32(0),
-    eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    outputCommands = process.RAWSIMEventContent.outputCommands,
-    fileName = cms.untracked.string('sherpa_EEG_MASTER_cff_py_GEN.root'),
-    dataset = cms.untracked.PSet(
-        filterName = cms.untracked.string(''),
-        dataTier = cms.untracked.string('')
-    ),
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('generation_step')
+					splitLevel = cms.untracked.int32(0),
+					eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
+					outputCommands = process.RAWSIMEventContent.outputCommands,
+					fileName = cms.untracked.string('/eos/user/n/nfilipov/zg_sherpa/sherpa_EEG_MASTER_cff_py_GEN.root'),
+					dataset = cms.untracked.PSet(
+		filterName = cms.untracked.string(''),
+		dataTier = cms.untracked.string('')
+		),
+					SelectEvents = cms.untracked.PSet(
+		SelectEvents = cms.vstring('generation_step')
     )
 )
 

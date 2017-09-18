@@ -1,48 +1,119 @@
 #ifndef SpinCorrelations_SpinCorrel_SpinCorrel_h
 #define SpinCorrelations_SpinCorrel_SpinCorrel_h
-// -*- C++ -*-
-//
-// Package:    SpinCorrelations/SpinCorrel
-// Class:      SpinCorrel
-// 
-/**\class SpinCorrel SpinCorrel.h SpinCorrelations/SpinCorrel/plugins/SpinCorrel.h
 
-Description: [one line class summary]
+//system include files
+#include <memory>
 
-Implementation:
-[Notes on implementation]
-*/
-//
-// Original Author:  Nicolas Filipovic
-//         Created:  Tue, 05 Sep 2017 15:28:26 GMT
-//
-//
-#include <TH1.h>
-#include "FWCore/TFWLiteSelector/interface/TFWLiteSelector.h"
+// FWCore include files
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-//A worker processes the events.  When using PROOF there is one Worker per PROOF CPU Node.
-struct SpinCorrelWorker {
-  SpinCorrelWorker(const TList*, TList&);
-  ~SpinCorrelWorker();
-  void process( const edm::Event& iEvent );
-  void postProcess(TList&);
-  //Place histograms, etc that you want to fill here
-  //TH1F* h_a;
-};
+// DataFormat includes
+#include "DataFormats/Provenance/interface/Provenance.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
+//#include <DataFormats/PatCandidates/interface/CompositeCandidate.h>
+//#include <DataFormats/PatCandidates/interface/CompositeCandidate.h>
 
-//Only one Selector is made per job. It gets all the results from each worker.
-class SpinCorrel : public TFWLiteSelector<SpinCorrelWorker> {
-public :
-  SpinCorrel();
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+//ROOT includes...
+#include "TBranch.h"
+#include "TLorentzVector.h"
+#include "TTree.h"
+#include "TFile.h"
+#include "TClonesArray.h"
+//#include "TFileService.h"
+
+//#include "Math.h"x
+//using namespace reco;
+
+//
+// class declaration
+//
+
+class SpinCorrel : public edm::EDProducer {
+public:
+  explicit SpinCorrel(const edm::ParameterSet&);
   ~SpinCorrel();
-  void begin(TList*&);
-  void terminate(TList&);
-    
-private:
-    
-  SpinCorrel(SpinCorrel const&);
-  SpinCorrel operator=(SpinCorrel const&);
   
-  ClassDef(SpinCorrel,2)
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  
+  
+  //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+  //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
+  //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+  //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+  
+  // ----------member data ---------------------------
+ private:
+  virtual void beginJob() override;
+  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  virtual void endJob() override;
+  void InitTree();
+
+  edm::EDGetTokenT<reco::GenParticleCollection> theGenParticlesToken_;
+  //	
+  double mommass, mompt, momy,momphi; int momid=-99999, momst=-99999;
+  double pmass, ppt, py,pphi;
+  double daumass, daupt, daueta,dauphi; int dauid=-99999, daust=-99999;
+  double gdaumass, gdaupt, gdaueta,gdauphi; int gdauid=-99999, gdaust=-99999;
+  
+  TFile * fOut;
+  TTree * myTree;
+
+  //  TClonesArr
+
+  int LeptonID[1000];
+  int MotherID[1000];
+  int DaughterID[1000];
+  int GrandDaughterID[1000];
+
+  int LeptonStatus[1000];
+  int MotherStatus[1000];
+  int DaughterStatus[1000];
+  int GrandDaughterStatus[1000];
+
+  double LeptonPlusPt, LeptonPlusEta, LeptonPlusPhi, LeptonMinusMass;
+  double LeptonMinusPt, LeptonMinusEta, LeptonMinusPhi, LeptonPlusMass;
+  double TauPlusPiPt, TauPlusPiEta,TauPlusPiPhi, TauMinusPiMass;
+  double TauMinusPiPt, TauMinusPiEta,TauMinusPiPhi, TauPlusPiMass;
+
+  double PhotonEt, PhotonEta, PhotonPhi, PhotonMass; 
+  double PhotonDEt, PhotonDEta, PhotonDPhi, PhotonDMass;
+
+  std::vector<double> PhotonGDEt, PhotonGDEta, PhotonGDPhi, PhotonGDMass;
+
+  const double PiMass=0.13957;
+  const double TauMass = 1.777;
+  
+
+  
+  int nl, nldp, nldm, id, st;
+
+  bool filltree;
+  /* int numberofkids; */
+  /* int numbergdkids; */
+
+  // edm::InputTag src_;
+  // typedef std::vector<int> pdgid;
+  // typedef std::vector<reco::GenParticle> recoGenParticles_genParticles__GEN_obj;
+  // TBranch        *b_recoGenParticles_genParticles__GEN_obj;   //!
+  
 };
+
+
+//
+// constants, enums and typedefs
+//
+
+
+//
+// static data member definitions
+//
+
 #endif

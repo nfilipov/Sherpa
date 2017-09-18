@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10000)
+    input = cms.untracked.int32(100000)
 )
 
 # Input source
@@ -31,6 +31,9 @@ process.source = cms.Source("EmptySource")
 process.options = cms.untracked.PSet(
 
 )
+
+process.MessageLogger.cerr.threshold = 'INFO'
+process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -45,7 +48,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     outputCommands = process.RAWSIMEventContent.outputCommands,
-    fileName = cms.untracked.string('sherpa_TTG_MASTER_cff_py_GEN.root'),
+    fileName = cms.untracked.string('/eos/user/n/nfilipov/zg_sherpa/sherpa_TTG_MASTER_cff_py_GEN.root'),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('')
