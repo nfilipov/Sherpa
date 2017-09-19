@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/afs/cern.ch/user/n/nfilipov/CMSSW_7_1_26/src/MY/PROJECT/test/SHERPATMP_TTGSPIN/TMP/Process/Amegic/lib'
+libdir='/afs/cern.ch/user/n/nfilipov/CMSSW_7_1_26/src/MY/PROJECT/test/SHERPATMP_EEG/TMP/Process/Amegic/lib'

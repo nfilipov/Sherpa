@@ -20,13 +20,13 @@
 (selector){
  Mass 11 -11 50 E_CMS;
  PT 22 10. E_CMS;
- # PT 13 50. E_CMS;
- # PT -13 50. E_CMS;
+# PT 11 30. E_CMS;
+# PT -11 30. E_CMS;
  PseudoRapidity 22 -3.0 3.0;
  PseudoRapidity 11 -3.0 3.0;
  PseudoRapidity -11 -3.0 3.0;
- DeltaR 22 11 0.6 100000
- DeltaR 22 -11 0.6 100000
+ DeltaR 22 11 0.2 100000
+ DeltaR 22 -11 0.2 100000
 }(selector)
 (shower){
  CSS_EW_MODE = 1
