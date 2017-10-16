@@ -15,6 +15,7 @@
 
 #include <TString.h>
 #include <TLorentzVector.h>
+#include <TVector3.h>
 #include <TTree.h>
 #include <TH1F.h>
 
@@ -252,8 +253,14 @@ void SherpaKinematics()
 	    pip.SetPtEtaPhiM(_pippt,_pipeta,_pipphi,_pipm);
 	    pim.SetPtEtaPhiM(_pimpt,_pimeta,_pimphi,_pimm);
 	    pipi = pip+pim;
+	    TLorentzVector tautau;
+	    tautau = ll;
+	    TVector3 tautauBoost = tautau.BoostVector();
+	    TLorentzVector pipi_comframe = pipi;
+	    pipi_comframe.Boost(-tautauBoost);
+	    //	    std::cout<<"tautau 4 momentum = ("<<tautau_comframe.E()<<", - "<<tautau_comframe.Px()<<", - "<<tautau_comframe.Py()<<", - "<<tautau_comframe.Pz()<<")"<<std::endl;
 	    
-	    if (pipi.M()>0) hPiPiMass[i-2]->Fill(pipi.M());
+	    if (pipi.M()>0) hPiPiMass[i-2]->Fill(pipi_comframe.M());
 	  }
       }
     }
@@ -335,7 +342,11 @@ void SherpaKinematics()
   std::cout << "Ahhh" << std::endl;
   //  hPhotonPt->Draw();
 }
-
+void plotMG(){
+  setTDRStyle();
+  TFile *mg = TFile::Open("ZG_255_1M.root");
+  
+}
 void drawPlots(){
   setTDRStyle();
   TFile *eppt = TFile::Open("EEG_100k_histos.root","READ");
