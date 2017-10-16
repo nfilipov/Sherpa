@@ -29,7 +29,8 @@ using namespace std;
 #include "tdrstyle.C"
 
 //const TString basedir = "~/postdoc_ELTE/Zgamma/Sherpa/plaots/";  //linux
-const TString basedir = "~/Sherpa/Sherpa/";
+//const TString basedir = "~/Sherpa/Sherpa/";
+const TString basedir = "./";
 
 const TString Trees[4] = {"EEG_100k","MMG_100k","TTG","TTGSPIN"};
 
@@ -342,11 +343,7 @@ void SherpaKinematics()
   std::cout << "Ahhh" << std::endl;
   //  hPhotonPt->Draw();
 }
-void plotMG(){
-  setTDRStyle();
-  TFile *mg = TFile::Open("ZG_255_1M.root");
-  
-}
+
 void drawPlots(){
   setTDRStyle();
   TFile *eppt = TFile::Open("EEG_100k_histos.root","READ");
@@ -1040,4 +1037,133 @@ void drawPlots(){
 
   //ctaus.SaveAs("ctaus.C");
   
+}
+
+void plotMG(){
+  setTDRStyle();
+  TFile *mg = TFile::Open("ZG_255_1M.root","READ");
+  TTree *t = (TTree*) mg->Get("LHEF");
+
+  TH1D* hPhotonPt[3]    ;
+  TH1D* hPhotonEta[3]   ;
+  TH1D* hPhotonPhi[3]   ;
+
+  //lepton histograms (p
+  TH1D* hLeptonPt[3]    ;
+  TH1D* hLeptonEta[3]   ;
+  TH1D* hLeptonPhi[3]   ;
+
+    //lepton histograms (p
+  TH1D* hLeptonPlusPt[3]    ;
+  TH1D* hLeptonPlusEta[3]   ;
+  TH1D* hLeptonPlusPhi[3]   ;
+
+      //lepton histograms (p
+  TH1D* hLeptonMinusPt[3]    ;
+  TH1D* hLeptonMinusEta[3]   ;
+  TH1D* hLeptonMinusPhi[3]   ;
+
+  // dilepton histograms
+  TH1D* hDileptonPt[3]  ;
+  TH1D* hDileptonMass[3];
+  TH1D* hDileptonEta[3] ;
+
+  TH1D* hTriobjectPt[3];
+  TH1D* hTriobjectMass[3];
+  TH1D* hTriobjectEta[3];
+  TH1D* hTriobjectPhi[3];
+  TH1D* hPiPiMass[2];
+
+  TH1D* hDeltaR[3];
+
+  for (int i = 0 ; i < 3 ; i++){
+    TFile plots(basedir+Trees[i]+"_MadGraph.root");
+
+    TLorentzVector p,m,g[50],ll,llg[50],pip,pim,pipi;
+    double _ppt,_peta,_pphi,_pm,
+      _mpt,_meta,_mphi,_mm,
+      _gpt,_geta,_gphi,_gm,
+      _pippt,_pipeta,_pipphi,_pipm,
+      _pimpt,_pimeta,_pimphi,_pimm,
+      _dRpp, _dRpm; // delta R between photon and lepton(plus/minus)
+  
+    std::vector<double> *_photonpt=0;
+    std::vector<double> *_photoneta=0;
+    std::vector<double> *_photonm=0;
+    std::vector<double> *_photonphi=0;
+
+
+    int nldm, nldp; // number of lepton daughters
+    // t->SetBranchAddress("nldp",&nldp);
+    // t->SetBranchAddress("nldm",&nldm);
+
+    // t->SetBranchAddress("LeptonPlusPt",&_ppt);
+    // t->SetBranchAddress("LeptonPlusEta",&_peta);
+    // t->SetBranchAddress("LeptonPlusPhi",&_pphi);
+    // t->SetBranchAddress("LeptonPlusMass",&_pm);
+
+    // t->SetBranchAddress("LeptonMinusPt",&_mpt);
+    // t->SetBranchAddress("LeptonMinusEta",&_meta);
+    // t->SetBranchAddress("LeptonMinusPhi",&_mphi);
+    // t->SetBranchAddress("LeptonMinusMass",&_mm);
+
+    // t->SetBranchAddress("PhotonEt",&_photonpt);
+    // t->SetBranchAddress("PhotonEta",&_photoneta);
+    // t->SetBranchAddress("PhotonPhi",&_photonphi);
+    // t->SetBranchAddress("PhotonMass",&_photonm);
+
+    // t->SetBranchAddress("TauPlusPiPt",&_pippt);
+    // t->SetBranchAddress("TauPlusPiEta",&_pipeta);
+    // t->SetBranchAddress("TauPlusPiPhi",&_pipphi);
+    // t->SetBranchAddress("TauPlusPiMass",&_pipm);
+
+    // t->SetBranchAddress("TauMinusPiPt",&_pimpt);
+    // t->SetBranchAddress("TauMinusPiEta",&_pimeta);
+    // t->SetBranchAddress("TauMinusPiPhi",&_pimphi);
+    // t->SetBranchAddress("TauMinusPiMass",&_pimm);
+
+    t->SetBranchAddress()
+    
+    hPhotonPt[i]     = new TH1D("hPhotonPt",";p_{T}_{#gamma} [GeV/c]",50,5,85);
+    hPhotonEta[i]    = new TH1D("hPhotonEta",";#eta_{#gamma}",50,-3.,3.);
+    hPhotonPhi[i]    = new TH1D("hPhotonPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
+
+    //lepton histograms (pt, eta, phi, by default done with lepton +)
+    hLeptonPt[i]     = new TH1D("hLeptonPt",";p_{T}_{lep} [GeV/c]",50,0,200);
+    hLeptonEta[i]    = new TH1D("hLeptonEta",";#eta_{lep}",50,-3.,3.);
+    hLeptonPhi[i]    = new TH1D("hLeptonPhi",";#phi_{lep}",50,-3.1415926536,-3.1415926536);
+    //lepton histograms (pt, eta, phi, by default done with lepton +)
+    hLeptonPlusPt[i]     = new TH1D("hLeptonPlusPt",";p_{T}_{lep} [GeV/c]",50,0,200);
+    hLeptonPlusEta[i]    = new TH1D("hLeptonPlusEta",";#eta_{lep}",50,-3.,3.);
+    hLeptonPlusPhi[i]    = new TH1D("hLeptonPlusPhi",";#phi_{lep}",50,-3.1415926536,-3.1415926536);
+    //lepton histograms (pt, eta, phi, by default done with lepton +)
+    hLeptonMinusPt[i]     = new TH1D("hLeptonMinusPt",";p_{T}_{lep} [GeV/c]",50,0,200);
+    hLeptonMinusEta[i]    = new TH1D("hLeptonMinusEta",";#eta_{lep}",50,-3.,3.);
+    hLeptonMinusPhi[i]    = new TH1D("hLeptonMinusPhi",";#phi_{lep}",50,-3.1415926536,-3.1415926536);
+
+    //dilepton histograms (pt, mass, rapidity)
+    hDileptonPt[i]   = new TH1D("hDileptonPt",";p_{T}_{ll} [GeV/c]",50,0,200);
+    hDileptonMass[i] = new TH1D("hDileptonMass",";m_{ll} [GeV/c^{2}]",50,30,180);
+    hDileptonEta[i]  = new TH1D("hDileptonEta",";y_{ll}",50,-3.,3.);
+
+    // llgamma histograms
+    hTriobjectPt[i]   = new TH1D("hTriobjectPt",";p_{T}_{ll} [GeV/c]",50,0,200);
+    hTriobjectMass[i] = new TH1D("hTriobjectMass",";m_{ll} [GeV/c^{2}]",50,0,200);
+    hTriobjectEta[i]  = new TH1D("hTriobjectEta",";y_{ll#gamma}",50,-3.,3.);
+    hTriobjectPhi[i]  = new TH1D("hTriobjectPhi",";#phi_{ll#gamma}",50,-3.1415926536,3.1415926536);
+
+    hDeltaR[i] =  new TH1D("hDeltaR",";#DeltaR(l,#gamma)",80,0,8);
+    
+    //pipi histogram
+    if (i>1){
+      hPiPiMass[i-2] = new TH1D("hPiPiMass",";m_{#pi#pi} [GeV/c^{2}]",20,0,100);
+    }
+
+    //let's-a-go
+    int entries = t->GetEntries();
+    for (int _i = 0 ; _i < entries ; _i++){
+      t->GetEntry(_i);
+
+    }
+  }//lepton flavour loop
 }
