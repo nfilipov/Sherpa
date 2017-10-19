@@ -22,6 +22,10 @@
 #include <fstream>
 #include <iostream>
 
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
+#include "TTreeReaderArray.h"
+
 using namespace std;
 
 // miscellaneous
@@ -139,7 +143,7 @@ void SherpaKinematics()
     t->SetBranchAddress("TauMinusPiPhi",&_pimphi);
     t->SetBranchAddress("TauMinusPiMass",&_pimm);
 
-    hPhotonPt[i]     = new TH1D("hPhotonPt",";p_{T}_{#gamma} [GeV/c]",50,5,85);
+    hPhotonPt[i]     = new TH1D("hPhotonPt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
     hPhotonEta[i]    = new TH1D("hPhotonEta",";#eta_{#gamma}",50,-3.,3.);
     hPhotonPhi[i]    = new TH1D("hPhotonPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
 
@@ -1042,128 +1046,230 @@ void drawPlots(){
 void plotMG(){
   setTDRStyle();
   TFile *mg = TFile::Open("ZG_255_1M.root","READ");
-  TTree *t = (TTree*) mg->Get("LHEF");
-
-  TH1D* hPhotonPt[3]    ;
-  TH1D* hPhotonEta[3]   ;
-  TH1D* hPhotonPhi[3]   ;
-
-  //lepton histograms (p
-  TH1D* hLeptonPt[3]    ;
-  TH1D* hLeptonEta[3]   ;
-  TH1D* hLeptonPhi[3]   ;
-
-    //lepton histograms (p
-  TH1D* hLeptonPlusPt[3]    ;
-  TH1D* hLeptonPlusEta[3]   ;
-  TH1D* hLeptonPlusPhi[3]   ;
-
-      //lepton histograms (p
-  TH1D* hLeptonMinusPt[3]    ;
-  TH1D* hLeptonMinusEta[3]   ;
-  TH1D* hLeptonMinusPhi[3]   ;
-
-  // dilepton histograms
-  TH1D* hDileptonPt[3]  ;
-  TH1D* hDileptonMass[3];
-  TH1D* hDileptonEta[3] ;
-
-  TH1D* hTriobjectPt[3];
-  TH1D* hTriobjectMass[3];
-  TH1D* hTriobjectEta[3];
-  TH1D* hTriobjectPhi[3];
-  TH1D* hPiPiMass[2];
-
-  TH1D* hDeltaR[3];
-
-  for (int i = 0 ; i < 3 ; i++){
-    TFile plots(basedir+Trees[i]+"_MadGraph.root");
-
-    TLorentzVector p,m,g[50],ll,llg[50],pip,pim,pipi;
-    double _ppt,_peta,_pphi,_pm,
-      _mpt,_meta,_mphi,_mm,
-      _gpt,_geta,_gphi,_gm,
-      _pippt,_pipeta,_pipphi,_pipm,
-      _pimpt,_pimeta,_pimphi,_pimm,
-      _dRpp, _dRpm; // delta R between photon and lepton(plus/minus)
+  TTreeReader myReader("LHEF",mg);
   
-    std::vector<double> *_photonpt=0;
-    std::vector<double> *_photoneta=0;
-    std::vector<double> *_photonm=0;
-    std::vector<double> *_photonphi=0;
+  TFile plots("ZG_madgraph_histos.root","RECREATE");
 
+  TH1D* hPhoton_wePt = new TH1D("hPhoton_wePt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
+  TH1D* hPhoton_weEta = new TH1D("hPhoton_weEta",";#eta_{#gamma}",50,-3.,3.);
+  TH1D* hPhoton_wePhi = new TH1D("hPhoton_wePhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
+  TH1D* hPhoton_wmPt = new TH1D("hPhoton_wmPt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
+  TH1D* hPhoton_wmEta = new TH1D("hPhoton_wmEta",";#eta_{#gamma}",50,-3.,3.);
+  TH1D* hPhoton_wmPhi = new TH1D("hPhoton_wmPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
+  TH1D* hPhoton_wtPt = new TH1D("hPhoton_wtPt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
+  TH1D* hPhoton_wtEta = new TH1D("hPhoton_wtEta",";#eta_{#gamma}",50,-3.,3.);
+  TH1D* hPhoton_wtPhi = new TH1D("hPhoton_wtPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
 
-    int nldm, nldp; // number of lepton daughters
-    // t->SetBranchAddress("nldp",&nldp);
-    // t->SetBranchAddress("nldm",&nldm);
+  TH1D* hTriobject_wePt  = new TH1D("hTriobject_wePt",";p_{T}_{ee#gamma} [GeV/c]",50,0,200);
+  TH1D* hTriobject_weMass = new TH1D("hTriobject_weMass",";m_{ee#gamma} [GeV/c^{2}]",50,0,200);
+  TH1D* hTriobject_weEta = new TH1D("hTriobject_weEta",";y_{ee#gamma}",50,-3.,3.);
+  TH1D* hTriobject_wePhi= new TH1D("hTriobject_wePhi",";#phi_{ee#gamma}",50,-3.1415926536,3.1415926536);
+  TH1D* hTriobject_wmPt  = new TH1D("hTriobject_wmPt",";p_{T}_{ee#gamma} [GeV/c]",50,0,200);
+  TH1D* hTriobject_wmMass = new TH1D("hTriobject_wmMass",";m_{ee#gamma} [GeV/c^{2}]",50,0,200);
+  TH1D* hTriobject_wmEta = new TH1D("hTriobject_wmEta",";y_{ee#gamma}",50,-3.,3.);
+  TH1D* hTriobject_wmPhi= new TH1D("hTriobject_wmPhi",";#phi_{ee#gamma}",50,-3.1415926536,3.1415926536);
+  TH1D* hTriobject_wtPt  = new TH1D("hTriobject_wtPt",";p_{T}_{ee#gamma} [GeV/c]",50,0,200);
+  TH1D* hTriobject_wtMass = new TH1D("hTriobject_wtMass",";m_{ee#gamma} [GeV/c^{2}]",50,0,200);
+  TH1D* hTriobject_wtEta = new TH1D("hTriobject_wtEta",";y_{ee#gamma}",50,-3.,3.);
+  TH1D* hTriobject_wtPhi= new TH1D("hTriobject_wtPhi",";#phi_{ee#gamma}",50,-3.1415926536,3.1415926536);
 
-    // t->SetBranchAddress("LeptonPlusPt",&_ppt);
-    // t->SetBranchAddress("LeptonPlusEta",&_peta);
-    // t->SetBranchAddress("LeptonPlusPhi",&_pphi);
-    // t->SetBranchAddress("LeptonPlusMass",&_pm);
+  TH1D* hPiPiMass;
 
-    // t->SetBranchAddress("LeptonMinusPt",&_mpt);
-    // t->SetBranchAddress("LeptonMinusEta",&_meta);
-    // t->SetBranchAddress("LeptonMinusPhi",&_mphi);
-    // t->SetBranchAddress("LeptonMinusMass",&_mm);
+  TH1D* hDelta_weR=  new TH1D("hDelta_weR",";#DeltaR(e,#gamma)",80,0,8);
+  TH1D* hDelta_wmR=  new TH1D("hDelta_wmR",";#DeltaR(#mu,#gamma)",80,0,8);
+  TH1D* hDelta_wtR=  new TH1D("hDelta_wtR",";#DeltaR(#tau,#gamma)",80,0,8);
 
-    // t->SetBranchAddress("PhotonEt",&_photonpt);
-    // t->SetBranchAddress("PhotonEta",&_photoneta);
-    // t->SetBranchAddress("PhotonPhi",&_photonphi);
-    // t->SetBranchAddress("PhotonMass",&_photonm);
+  TH1D* hElectronPlusPt= new TH1D("hElectronPlusPt",";p_{T}_{e+} [GeV/c]",50,0,200);
+  TH1D* hElectronMinusPt= new TH1D("hElectronMinusPt",";p_{T}_{e-} [GeV/c]",50,0,200);
+  TH1D* hElectronPlusEta= new TH1D("hElectronPlusEta",";#eta_{e+}",50,-3.,3.);
+  TH1D* hElectronMinusEta= new TH1D("hElectronMinusEta",";#eta_{e-}",50,-3.,3.);
+  TH1D* hElectronPlusPhi = new TH1D("hElectronPlusPhi",";#phi_{e+}",50,-3.1415926536,-3.1415926536);
+  TH1D* hElectronMinusPhi = new TH1D("hElectronMinusPhi",";#phi_{e-}",50,-3.1415926536,-3.1415926536);
+  
+  TH1D* hMuonPlusPt= new TH1D("hMuonPlusPt",";p_{T}_{#mu+} [GeV/c]",50,0,200);
+  TH1D* hMuonMinusPt= new TH1D("hMuonMinusPt",";p_{T}_{#mu-} [GeV/c]",50,0,200);
+  TH1D* hMuonPlusEta= new TH1D("hMuonPlusEta",";#eta_{#mu+}",50,-3.,3.);
+  TH1D* hMuonMinusEta= new TH1D("hMuonMinusEta",";#eta_{#mu-}",50,-3.,3.);
+  TH1D* hMuonPlusPhi = new TH1D("hMuonPlusPhi",";#phi_{#mu+}",50,-3.1415926536,-3.1415926536);
+  TH1D* hMuonMinusPhi = new TH1D("hMuonMinusPhi",";#phi_{#mu-}",50,-3.1415926536,-3.1415926536);
+  
+  TH1D* hTauPlusPt= new TH1D("hTauPlusPt",";p_{T}_{#tau+} [GeV/c]",50,0,200);
+  TH1D* hTauMinusPt= new TH1D("hTauMinusPt",";p_{T}_{#tau-} [GeV/c]",50,0,200);
+  TH1D* hTauPlusEta= new TH1D("hTauPlusEta",";#eta_{#tau+}",50,-3.,3.);
+  TH1D* hTauMinusEta= new TH1D("hTauMinusEta",";#eta_{#tau-}",50,-3.,3.);
+  TH1D* hTauPlusPhi = new TH1D("hTauPlusPhi",";#phi_{#tau+}",50,-3.1415926536,-3.1415926536);
+  TH1D* hTauMinusPhi = new TH1D("hTauMinusPhi",";#phi_{#tau-}",50,-3.1415926536,-3.1415926536);
 
-    // t->SetBranchAddress("TauPlusPiPt",&_pippt);
-    // t->SetBranchAddress("TauPlusPiEta",&_pipeta);
-    // t->SetBranchAddress("TauPlusPiPhi",&_pipphi);
-    // t->SetBranchAddress("TauPlusPiMass",&_pipm);
+  TH1D* hEEPt = new TH1D("hEEPt",";p_{T}_{ee} [GeV/c]",50,0,200);
+  TH1D* hEEMass = new TH1D("hEEMass",";m_{ee} [GeV/c^{2}]",50,0,200);
+  TH1D* hEERapidity  = new TH1D("hEEEta",";y_{ee}",50,-3.,3.);
+  TH1D* hMMPt = new TH1D("hMMPt",";p_{T}_{#mu#mu} [GeV/c]",50,0,200);
+  TH1D* hMMMass = new TH1D("hMMMass",";m_{#mu#mu} [GeV/c^{2}]",50,0,200);
+  TH1D* hMMRapidity = new TH1D("hMMEta",";y_{#mu#mu}",50,-3.,3.);
+  TH1D* hTTPt = new TH1D("hTTPt",";p_{T}_{#tau#tau} [GeV/c]",50,0,200);
+  TH1D* hTTMass = new TH1D("hTTMass",";m_{#tau#tau} [GeV/c^{2}]",50,0,200);
+  TH1D* hTTRapidity = new TH1D("hTTEta",";y_{#tau#tau}",50,-3.,3.);
 
-    // t->SetBranchAddress("TauMinusPiPt",&_pimpt);
-    // t->SetBranchAddress("TauMinusPiEta",&_pimeta);
-    // t->SetBranchAddress("TauMinusPiPhi",&_pimphi);
-    // t->SetBranchAddress("TauMinusPiMass",&_pimm);
+  //  TTreeReaderValue<Long64_t> rvEventNumber(myReader, "Event.Number");
+  TTreeReaderValue<Int_t> rvParticle_size(myReader, "Particle_size");
+  TTreeReaderArray<Int_t> raParticlePID(myReader, "Particle.PID");
+  TTreeReaderArray<Int_t> raParticleStatus(myReader, "Particle.Status");
+  TTreeReaderArray<Int_t> raParticleMom1(myReader, "Particle.Mother1");
+  TTreeReaderArray<Int_t> raParticleMom2(myReader, "Particle.Mother2");
+  TTreeReaderArray<Double_t> raParticlePx(myReader, "Particle.Px");
+  TTreeReaderArray<Double_t> raParticlePy(myReader, "Particle.Py");
+  TTreeReaderArray<Double_t> raParticlePz(myReader, "Particle.Pz");
+  TTreeReaderArray<Double_t> raParticleE(myReader, "Particle.E");
+  TTreeReaderArray<Double_t> raParticleM(myReader, "Particle.M");
+  TTreeReaderArray<Double_t> raParticlePT(myReader, "Particle.PT");
+  TTreeReaderArray<Double_t> raParticleEta(myReader, "Particle.Eta");
+  TTreeReaderArray<Double_t> raParticlePhi(myReader, "Particle.Phi");
+  TTreeReaderArray<Double_t> raParticleRapidity(myReader, "Particle.Rapidity");
+  TTreeReaderArray<Double_t> raParticleLifeTime(myReader, "Particle.LifeTime");
+  TTreeReaderArray<Double_t> raParticleSpin(myReader, "Particle.Spin");
+  TLorentzVector muon;	TLorentzVector antimuon;
+  TLorentzVector electron;	TLorentzVector antielectron;
+  TLorentzVector tau;	TLorentzVector antitau;
+  TLorentzVector photon; TLorentzVector Z;
+  TLorentzVector dilepton; TLorentzVector triobject;
+  TLorentzVector Zgamma;
 
-    t->SetBranchAddress()
-    
-    hPhotonPt[i]     = new TH1D("hPhotonPt",";p_{T}_{#gamma} [GeV/c]",50,5,85);
-    hPhotonEta[i]    = new TH1D("hPhotonEta",";#eta_{#gamma}",50,-3.,3.);
-    hPhotonPhi[i]    = new TH1D("hPhotonPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
-
-    //lepton histograms (pt, eta, phi, by default done with lepton +)
-    hLeptonPt[i]     = new TH1D("hLeptonPt",";p_{T}_{lep} [GeV/c]",50,0,200);
-    hLeptonEta[i]    = new TH1D("hLeptonEta",";#eta_{lep}",50,-3.,3.);
-    hLeptonPhi[i]    = new TH1D("hLeptonPhi",";#phi_{lep}",50,-3.1415926536,-3.1415926536);
-    //lepton histograms (pt, eta, phi, by default done with lepton +)
-    hLeptonPlusPt[i]     = new TH1D("hLeptonPlusPt",";p_{T}_{lep} [GeV/c]",50,0,200);
-    hLeptonPlusEta[i]    = new TH1D("hLeptonPlusEta",";#eta_{lep}",50,-3.,3.);
-    hLeptonPlusPhi[i]    = new TH1D("hLeptonPlusPhi",";#phi_{lep}",50,-3.1415926536,-3.1415926536);
-    //lepton histograms (pt, eta, phi, by default done with lepton +)
-    hLeptonMinusPt[i]     = new TH1D("hLeptonMinusPt",";p_{T}_{lep} [GeV/c]",50,0,200);
-    hLeptonMinusEta[i]    = new TH1D("hLeptonMinusEta",";#eta_{lep}",50,-3.,3.);
-    hLeptonMinusPhi[i]    = new TH1D("hLeptonMinusPhi",";#phi_{lep}",50,-3.1415926536,-3.1415926536);
-
-    //dilepton histograms (pt, mass, rapidity)
-    hDileptonPt[i]   = new TH1D("hDileptonPt",";p_{T}_{ll} [GeV/c]",50,0,200);
-    hDileptonMass[i] = new TH1D("hDileptonMass",";m_{ll} [GeV/c^{2}]",50,30,180);
-    hDileptonEta[i]  = new TH1D("hDileptonEta",";y_{ll}",50,-3.,3.);
-
-    // llgamma histograms
-    hTriobjectPt[i]   = new TH1D("hTriobjectPt",";p_{T}_{ll} [GeV/c]",50,0,200);
-    hTriobjectMass[i] = new TH1D("hTriobjectMass",";m_{ll} [GeV/c^{2}]",50,0,200);
-    hTriobjectEta[i]  = new TH1D("hTriobjectEta",";y_{ll#gamma}",50,-3.,3.);
-    hTriobjectPhi[i]  = new TH1D("hTriobjectPhi",";#phi_{ll#gamma}",50,-3.1415926536,3.1415926536);
-
-    hDeltaR[i] =  new TH1D("hDeltaR",";#DeltaR(l,#gamma)",80,0,8);
-    
-    //pipi histogram
-    if (i>1){
-      hPiPiMass[i-2] = new TH1D("hPiPiMass",";m_{#pi#pi} [GeV/c^{2}]",20,0,100);
+  double deltaR_p, deltaR_m;
+  // Loop over all entries of the TTree or TChain.
+  while (myReader.Next()) {
+    Int_t particlesize = *rvParticle_size;
+    for (int ip = 0; ip < particlesize ; ip ++){
+      if (raParticlePID[ip] == 11){
+	electron.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+	hElectronMinusPt->Fill((double)electron.Pt());
+	hElectronMinusEta->Fill((double)electron.Eta());
+	hElectronMinusPhi->Fill((double)electron.Phi());
+      }
+      if (raParticlePID[ip] == -11){
+      	antielectron.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+      	hElectronPlusPt->Fill((double)antielectron.Pt());
+      	hElectronPlusEta->Fill((double)antielectron.Eta());
+      	hElectronPlusPhi->Fill((double)antielectron.Phi());
+      }
+      if (raParticlePID[ip] == 13){
+      	muon.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+      	hMuonMinusPt->Fill((double)muon.Pt());
+      	hMuonMinusEta->Fill((double)muon.Eta());
+      	hMuonMinusPhi->Fill((double)muon.Phi());
+      }
+      if (raParticlePID[ip] == -13){
+      	antimuon.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+      	hMuonPlusPt->Fill((double)antimuon.Pt());
+      	hMuonPlusEta->Fill((double)antimuon.Eta());
+      	hMuonPlusPhi->Fill((double)antimuon.Phi());
+      }
+      if (raParticlePID[ip] == 15){
+      	tau.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+      	hTauMinusPt->Fill((double)tau.Pt());
+      	hTauMinusEta->Fill((double)tau.Eta());
+      	hTauMinusPhi->Fill((double)tau.Phi());
+      }
+      if (raParticlePID[ip] == -15){
+      	antitau.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+      	hTauPlusPt->Fill((double)antitau.Pt());
+      	hTauPlusEta->Fill((double)antitau.Eta());
+      	hTauPlusPhi->Fill((double)antitau.Phi());
+      }
+      if (raParticlePID[ip] == 22){
+	photon.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+      }
+      //  std::cout<<std::endl;
     }
+    if ((double)electron.E()>0) {
+      hPhoton_wePt->Fill((double)photon.Pt());
+      hPhoton_weEta->Fill((double)photon.Eta());
+      hPhoton_wePhi->Fill((double)photon.Phi());
+      Z = electron + antielectron;
+      hEEPt->Fill((double)Z.Pt());
+      hEEMass->Fill((double)Z.M());
+      hEERapidity->Fill((double)Z.Rapidity());
 
-    //let's-a-go
-    int entries = t->GetEntries();
-    for (int _i = 0 ; _i < entries ; _i++){
-      t->GetEntry(_i);
+      deltaR_m = sqrt(
+      		      pow((photon.Eta() - electron.Eta()),2) +
+      		      pow((photon.Phi() - electron.Phi()),2)
+      		      );
+      deltaR_p = sqrt(
+      		      pow((photon.Eta() - antielectron.Eta()),2) +
+      		      pow((photon.Phi() - antielectron.Phi()),2)
+      		      );
 
+      hDelta_weR->Fill(min(deltaR_m,deltaR_p));
+      Zgamma = Z + photon;
+      
+      hTriobject_wePt->Fill((double)Zgamma.Pt());
+      hTriobject_weEta->Fill((double)Zgamma.Rapidity());
+      hTriobject_wePhi->Fill((double)Zgamma.Phi());
+      hTriobject_weMass->Fill((double)Zgamma.M());
     }
-  }//lepton flavour loop
+    else if ((double)muon.E()>0) {
+      hPhoton_wmPt->Fill((double)photon.Pt());
+      hPhoton_wmEta->Fill((double)photon.Eta());
+      hPhoton_wmPhi->Fill((double)photon.Phi());
+      Z = muon + antimuon;
+      hMMPt->Fill((double)Z.Pt());
+      hMMMass->Fill((double)Z.M());
+      hMMRapidity->Fill((double)Z.Rapidity());
+
+      deltaR_m = sqrt(
+		      pow((photon.Eta() - muon.Eta()),2) +
+		      pow((photon.Phi() - muon.Phi()),2)
+		      );
+      deltaR_p = sqrt(
+		      pow((photon.Eta() - antimuon.Eta()),2) +
+		      pow((photon.Phi() - antimuon.Phi()),2)
+		      );
+      
+      hDelta_wmR->Fill(min(deltaR_m,deltaR_p));
+
+      Zgamma = Z + photon;
+
+      hTriobject_wmPt->Fill((double)Zgamma.Pt());
+      hTriobject_wmEta->Fill((double)Zgamma.Rapidity());
+      hTriobject_wmPhi->Fill((double)Zgamma.Phi());
+      hTriobject_wmMass->Fill((double)Zgamma.M());      
+    }
+    else if ((double)tau.E()>0) {
+      hPhoton_wtPt->Fill((double)photon.Pt());
+      hPhoton_wtEta->Fill((double)photon.Eta());
+      hPhoton_wtPhi->Fill((double)photon.Phi());
+      Z = tau + antitau;
+      hTTPt->Fill((double)Z.Pt());
+      hTTMass->Fill((double)Z.M());
+      hTTRapidity->Fill((double)Z.Rapidity());
+      
+      deltaR_m = sqrt(
+		      pow((photon.Eta() - tau.Eta()),2) +
+		      pow((photon.Phi() - tau.Phi()),2)
+		      );
+      deltaR_p = sqrt(
+		      pow((photon.Eta() - antitau.Eta()),2) +
+		      pow((photon.Phi() - antitau.Phi()),2)
+		      );
+      
+      hDelta_wtR->Fill(min(deltaR_m,deltaR_p));
+
+      Zgamma = Z + photon;
+
+      hTriobject_wtPt->Fill((double)Zgamma.Pt());
+      hTriobject_wtEta->Fill((double)Zgamma.Rapidity());
+      hTriobject_wtPhi->Fill((double)Zgamma.Phi());
+      hTriobject_wtMass->Fill((double)Zgamma.M());      
+    }
+  }
+  plots.Write();
+  
+  // int entries = t->GetEntries();
+  // entries = 3;
+  // for (int _i = 0 ; _i < entries ; _i++){
+  //   t->GetEntry(_i);
+  //   //    for (int _j = 0 ; _j < _particlesize ; _j++){
+  //   //      std::cout << _particle[] <<", ";// std::endl;
+  //     // }// particle loop
+  // }//entry loop
+  //}//lepton flavour loop
 }
