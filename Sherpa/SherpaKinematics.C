@@ -491,7 +491,7 @@ void drawPlots(){
 
   ///// eta
 
-    TFile *epeta = TFile::Open("EEG_100k_histos.root","READ");
+  TFile *epeta = TFile::Open("EEG_100k_histos.root","READ");
   TH1D * hepeta; hepeta = (TH1D*) epeta->Get("hPhotonEta");
 
   TFile *mupeta = TFile::Open("MMG_100k_histos.root","READ");
@@ -845,8 +845,8 @@ void drawPlots(){
   //  cdpt.SaveAs("cdpt.C");
 
   //// pttriobject
-
-    TFile *etpt = TFile::Open("EEG_100k_histos.root","READ");
+  
+  TFile *etpt = TFile::Open("EEG_100k_histos.root","READ");
   TH1D * hetpt; hetpt = (TH1D*) etpt->Get("hTriobjectPt");
 
   TFile *mutpt = TFile::Open("MMG_100k_histos.root","READ");
@@ -1075,9 +1075,9 @@ void plotMG(){
 
   TH1D* hPiPiMass;
 
-  TH1D* hDelta_weR=  new TH1D("hDelta_weR",";#DeltaR(e,#gamma)",80,0,8);
-  TH1D* hDelta_wmR=  new TH1D("hDelta_wmR",";#DeltaR(#mu,#gamma)",80,0,8);
-  TH1D* hDelta_wtR=  new TH1D("hDelta_wtR",";#DeltaR(#tau,#gamma)",80,0,8);
+  TH1D* hDelta_weR= new TH1D("hDelta_weR",";#DeltaR(e,#gamma)",80,0,8);
+  TH1D* hDelta_wmR= new TH1D("hDelta_wmR",";#DeltaR(#mu,#gamma)",80,0,8);
+  TH1D* hDelta_wtR= new TH1D("hDelta_wtR",";#DeltaR(#tau,#gamma)",80,0,8);
 
   TH1D* hElectronPlusPt= new TH1D("hElectronPlusPt",";p_{T}_{e+} [GeV/c]",50,0,200);
   TH1D* hElectronMinusPt= new TH1D("hElectronMinusPt",";p_{T}_{e-} [GeV/c]",50,0,200);
@@ -1109,6 +1109,7 @@ void plotMG(){
   TH1D* hTTPt = new TH1D("hTTPt",";p_{T}_{#tau#tau} [GeV/c]",50,0,200);
   TH1D* hTTMass = new TH1D("hTTMass",";m_{#tau#tau} [GeV/c^{2}]",50,0,200);
   TH1D* hTTRapidity = new TH1D("hTTEta",";y_{#tau#tau}",50,-3.,3.);
+  TH1D* hTTPhi = new TH1D("hTTPhi",";#phi_{#tau#tau}",50,-3.1415926536,-3.1415926536);
 
   //  TTreeReaderValue<Long64_t> rvEventNumber(myReader, "Event.Number");
   TTreeReaderValue<Int_t> rvParticle_size(myReader, "Particle_size");
@@ -1135,60 +1136,65 @@ void plotMG(){
   TLorentzVector Zgamma;
 
   double deltaR_p, deltaR_m;
-  // Loop over all entries of the TTree or TChain.
+
+  double photonpt, photoneta, photonphi, electronpt, antielectronpt,electroneta, antielectroneta,electronphi, antielectronphi, muonpt, antimuonpt,muoneta, antimuoneta,muonphi, antimuonphi, taupt, antitaupt,taueta, antitaueta,tauphi, antitauphi ;
+    // Loop over all entries of the TTree or TChain.
   while (myReader.Next()) {
+    bool event_e = false;
+    bool event_m = false;
+    bool event_t = false;
+    photonpt =0; photoneta=0; photonphi=0; electronpt=0; antielectronpt=0;electroneta=0; antielectroneta=0; electronphi=0; antielectronphi=0; muonpt=0; antimuonpt=0;muoneta=0; antimuoneta=0;muonphi=0; antimuonphi=0; taupt=0; antitaupt =0; taueta=0; antitaueta=0; tauphi=0; antitauphi=0;
     Int_t particlesize = *rvParticle_size;
     for (int ip = 0; ip < particlesize ; ip ++){
       if (raParticlePID[ip] == 11){
 	electron.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
-	hElectronMinusPt->Fill((double)electron.Pt());
-	hElectronMinusEta->Fill((double)electron.Eta());
-	hElectronMinusPhi->Fill((double)electron.Phi());
+	electronpt = (double) electron.Pt();
+	electroneta = (double) electron.Eta();
+	electronphi = (double) electron.Phi();
       }
       if (raParticlePID[ip] == -11){
       	antielectron.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
-      	hElectronPlusPt->Fill((double)antielectron.Pt());
-      	hElectronPlusEta->Fill((double)antielectron.Eta());
-      	hElectronPlusPhi->Fill((double)antielectron.Phi());
+	antielectronpt = (double) antielectron.Pt();
+	antielectroneta = (double) antielectron.Eta();
+	antielectronphi = (double) antielectron.Phi();
       }
       if (raParticlePID[ip] == 13){
       	muon.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
-      	hMuonMinusPt->Fill((double)muon.Pt());
-      	hMuonMinusEta->Fill((double)muon.Eta());
-      	hMuonMinusPhi->Fill((double)muon.Phi());
+	muonpt = (double) muon.Pt();
+	muoneta = (double) muon.Eta();
+	muonphi = (double) muon.Phi();
       }
       if (raParticlePID[ip] == -13){
-      	antimuon.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
-      	hMuonPlusPt->Fill((double)antimuon.Pt());
-      	hMuonPlusEta->Fill((double)antimuon.Eta());
-      	hMuonPlusPhi->Fill((double)antimuon.Phi());
+	antimuon.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+	antimuonpt = (double) antimuon.Pt();
+	antimuoneta = (double) antimuon.Eta();
+	antimuonphi = (double) antimuon.Phi();
       }
       if (raParticlePID[ip] == 15){
       	tau.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
-      	hTauMinusPt->Fill((double)tau.Pt());
-      	hTauMinusEta->Fill((double)tau.Eta());
-      	hTauMinusPhi->Fill((double)tau.Phi());
+	taupt = (double) tau.Pt();
+	taueta = (double) tau.Eta();
+	tauphi = (double) tau.Phi();
       }
       if (raParticlePID[ip] == -15){
       	antitau.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
-      	hTauPlusPt->Fill((double)antitau.Pt());
-      	hTauPlusEta->Fill((double)antitau.Eta());
-      	hTauPlusPhi->Fill((double)antitau.Phi());
+	antitaupt = (double) antitau.Pt();
+	antitaueta = (double) antitau.Eta();
+	antitauphi = (double) antitau.Phi();
       }
       if (raParticlePID[ip] == 22){
 	photon.SetPxPyPzE(raParticlePx[ip],raParticlePy[ip],raParticlePz[ip],raParticleE[ip]);
+	photonpt = photon.Pt();
+	photoneta = photon.Eta();
+	photonphi = photon.Phi();
       }
       //  std::cout<<std::endl;
-    }
-    if ((double)electron.E()>0) {
-      hPhoton_wePt->Fill((double)photon.Pt());
-      hPhoton_weEta->Fill((double)photon.Eta());
-      hPhoton_wePhi->Fill((double)photon.Phi());
+    }/// end particlesize loop    
+    // if ((event_m && event_e) || (event_e && event_t) || (event_t && event_m)){
+    //   std::cout <<"at least two flavors in this event!"<< std::endl;
+    // }
+    if (electronpt > 15 && antielectronpt >15 && photonpt >10) {
       Z = electron + antielectron;
-      hEEPt->Fill((double)Z.Pt());
-      hEEMass->Fill((double)Z.M());
-      hEERapidity->Fill((double)Z.Rapidity());
-
       deltaR_m = sqrt(
       		      pow((photon.Eta() - electron.Eta()),2) +
       		      pow((photon.Phi() - electron.Phi()),2)
@@ -1197,24 +1203,29 @@ void plotMG(){
       		      pow((photon.Eta() - antielectron.Eta()),2) +
       		      pow((photon.Phi() - antielectron.Phi()),2)
       		      );
-
-      hDelta_weR->Fill(min(deltaR_m,deltaR_p));
-      Zgamma = Z + photon;
-      
-      hTriobject_wePt->Fill((double)Zgamma.Pt());
-      hTriobject_weEta->Fill((double)Zgamma.Rapidity());
-      hTriobject_wePhi->Fill((double)Zgamma.Phi());
-      hTriobject_weMass->Fill((double)Zgamma.M());
+      if(min(deltaR_m,deltaR_p) > 0.05){
+	hElectronMinusPt->Fill(electronpt);
+	hElectronMinusEta->Fill(electroneta);
+	hElectronMinusPhi->Fill(electronphi);
+	hElectronPlusPt->Fill(antielectronpt);
+	hElectronPlusEta->Fill(antielectroneta);
+	hElectronPlusPhi->Fill(antielectronphi);
+	Zgamma = Z + photon;
+	hPhoton_wePt->Fill((double)photon.Pt());
+	hPhoton_weEta->Fill((double)photon.Eta());
+	hPhoton_wePhi->Fill((double)photon.Phi());
+	hEEPt->Fill((double)Z.Pt());
+	hEEMass->Fill((double)Z.M());
+	hEERapidity->Fill((double)Z.Rapidity());
+	hDelta_weR->Fill(min(deltaR_m,deltaR_p));
+	hTriobject_wePt->Fill((double)Zgamma.Pt());
+	hTriobject_weEta->Fill((double)Zgamma.Rapidity());
+	hTriobject_wePhi->Fill((double)Zgamma.Phi());
+	hTriobject_weMass->Fill((double)Zgamma.M());
+      }
     }
-    else if ((double)muon.E()>0) {
-      hPhoton_wmPt->Fill((double)photon.Pt());
-      hPhoton_wmEta->Fill((double)photon.Eta());
-      hPhoton_wmPhi->Fill((double)photon.Phi());
+    if (muonpt > 15 && antimuonpt >15 && photonpt >10) {
       Z = muon + antimuon;
-      hMMPt->Fill((double)Z.Pt());
-      hMMMass->Fill((double)Z.M());
-      hMMRapidity->Fill((double)Z.Rapidity());
-
       deltaR_m = sqrt(
 		      pow((photon.Eta() - muon.Eta()),2) +
 		      pow((photon.Phi() - muon.Phi()),2)
@@ -1223,25 +1234,29 @@ void plotMG(){
 		      pow((photon.Eta() - antimuon.Eta()),2) +
 		      pow((photon.Phi() - antimuon.Phi()),2)
 		      );
-      
-      hDelta_wmR->Fill(min(deltaR_m,deltaR_p));
-
-      Zgamma = Z + photon;
-
-      hTriobject_wmPt->Fill((double)Zgamma.Pt());
-      hTriobject_wmEta->Fill((double)Zgamma.Rapidity());
-      hTriobject_wmPhi->Fill((double)Zgamma.Phi());
-      hTriobject_wmMass->Fill((double)Zgamma.M());      
+      if(min(deltaR_m,deltaR_p) > 0.05){
+	hMuonMinusPt->Fill(muonpt);
+	hMuonMinusEta->Fill(muoneta);
+	hMuonMinusPhi->Fill(muonphi);
+	hMuonPlusPt->Fill(antimuonpt);
+	hMuonPlusEta->Fill(antimuoneta);
+	hMuonPlusPhi->Fill(antimuonphi);
+	Zgamma = Z + photon;
+	hPhoton_wmPt->Fill((double)photon.Pt());
+	hPhoton_wmEta->Fill((double)photon.Eta());
+	hPhoton_wmPhi->Fill((double)photon.Phi());
+	hMMPt->Fill((double)Z.Pt());
+	hMMMass->Fill((double)Z.M());
+	hMMRapidity->Fill((double)Z.Rapidity());
+	hDelta_wmR->Fill(min(deltaR_m,deltaR_p));
+	hTriobject_wmPt->Fill((double)Zgamma.Pt());
+	hTriobject_wmEta->Fill((double)Zgamma.Rapidity());
+	hTriobject_wmPhi->Fill((double)Zgamma.Phi());
+	hTriobject_wmMass->Fill((double)Zgamma.M());
+      }
     }
-    else if ((double)tau.E()>0) {
-      hPhoton_wtPt->Fill((double)photon.Pt());
-      hPhoton_wtEta->Fill((double)photon.Eta());
-      hPhoton_wtPhi->Fill((double)photon.Phi());
+    if (taupt > 15 && antitaupt >15 && photonpt >10) {
       Z = tau + antitau;
-      hTTPt->Fill((double)Z.Pt());
-      hTTMass->Fill((double)Z.M());
-      hTTRapidity->Fill((double)Z.Rapidity());
-      
       deltaR_m = sqrt(
 		      pow((photon.Eta() - tau.Eta()),2) +
 		      pow((photon.Phi() - tau.Phi()),2)
@@ -1250,15 +1265,27 @@ void plotMG(){
 		      pow((photon.Eta() - antitau.Eta()),2) +
 		      pow((photon.Phi() - antitau.Phi()),2)
 		      );
-      
-      hDelta_wtR->Fill(min(deltaR_m,deltaR_p));
-
-      Zgamma = Z + photon;
-
-      hTriobject_wtPt->Fill((double)Zgamma.Pt());
-      hTriobject_wtEta->Fill((double)Zgamma.Rapidity());
-      hTriobject_wtPhi->Fill((double)Zgamma.Phi());
-      hTriobject_wtMass->Fill((double)Zgamma.M());      
+      if(min(deltaR_m,deltaR_p) > 0.05){
+	hTauMinusPt->Fill(taupt);
+	hTauMinusEta->Fill(taueta);
+	hTauMinusPhi->Fill(tauphi);
+	hTauPlusPt->Fill(antitaupt);
+	hTauPlusEta->Fill(antitaueta);
+	hTauPlusPhi->Fill(antitauphi);
+	hTTPhi->Fill((double)Z.Phi());
+	Zgamma = Z + photon;
+	hPhoton_wtPt->Fill((double)photon.Pt());
+	hPhoton_wtEta->Fill((double)photon.Eta());
+	hPhoton_wtPhi->Fill((double)photon.Phi());
+	hTTPt->Fill((double)Z.Pt());
+	hTTMass->Fill((double)Z.M());
+	hTTRapidity->Fill((double)Z.Rapidity());
+	hDelta_wtR->Fill(min(deltaR_m,deltaR_p));
+	hTriobject_wtPt->Fill((double)Zgamma.Pt());
+	hTriobject_wtEta->Fill((double)Zgamma.Rapidity());
+	hTriobject_wtPhi->Fill((double)Zgamma.Phi());
+	hTriobject_wtMass->Fill((double)Zgamma.M());
+      }
     }
   }
   plots.Write();
