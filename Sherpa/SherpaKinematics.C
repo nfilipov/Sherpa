@@ -12,6 +12,7 @@
 #include "TStyle.h"
 #include "TText.h"
 #include "TLegend.h"
+#include "TLegendEntry.h"
 
 #include <TString.h>
 #include <TLorentzVector.h>
@@ -54,6 +55,8 @@ const  ofstream ofSyst;
 
 const float gTextSize = 0.04;
 
+void draw_overlay(TH1D*, TH1D* , string, string , string);
+		  
 void SherpaKinematics()
 {
   //setting the style
@@ -144,7 +147,7 @@ void SherpaKinematics()
     t->SetBranchAddress("TauMinusPiMass",&_pimm);
 
     hPhotonPt[i]     = new TH1D("hPhotonPt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
-    hPhotonEta[i]    = new TH1D("hPhotonEta",";#eta_{#gamma}",50,-3.,3.);
+    hPhotonEta[i]    = new TH1D("hPhotonEta",";#eta_{#gamma}",50,-2.6,2.6);
     hPhotonPhi[i]    = new TH1D("hPhotonPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
 
     //lepton histograms (pt, eta, phi, by default done with lepton +)
@@ -162,7 +165,7 @@ void SherpaKinematics()
 
     //dilepton histograms (pt, mass, rapidity)
     hDileptonPt[i]   = new TH1D("hDileptonPt",";p_{T}_{ll} [GeV/c]",50,0,200);
-    hDileptonMass[i] = new TH1D("hDileptonMass",";m_{ll} [GeV/c^{2}]",50,30,180);
+    hDileptonMass[i] = new TH1D("hDileptonMass",";m_{ll} [GeV/c^{2}]",50,50,200);
     hDileptonEta[i]  = new TH1D("hDileptonEta",";y_{ll}",50,-3.,3.);
 
     // llgamma histograms
@@ -216,12 +219,12 @@ void SherpaKinematics()
 	    // LLG TLV
 	    llg[order] = g[order] + ll;
 	    
-	    if( _ppt > 15 && _mpt > 15 && *pt > 10){
+	    if( _ppt > 15 && _mpt > 15 && *pt > 10 && abs(*eta)<2.6 && abs(_peta)<3 && abs(_meta)<3){
 	    
 	      _dRpp = sqrt(pow((_peta - *eta),2) + pow((_pphi - *phi ),2));
 	      _dRpm = sqrt(pow((_meta - *eta),2) + pow((_mphi - *phi ),2));
 
-	      if (min(_dRpp, _dRpm) > 0.05){
+	      if (min(_dRpp, _dRpm) > 0.6 && ll.M() > 50){
 		hLeptonPt[i]->Fill(_ppt);
 		hLeptonEta[i]->Fill(_peta);
 		hLeptonPhi[i]->Fill(_pphi);
@@ -346,6 +349,185 @@ void SherpaKinematics()
 
   std::cout << "Ahhh" << std::endl;
   //  hPhotonPt->Draw();
+}
+void overlays(){
+  setTDRStyle();
+  TFile *madgraph = TFile::Open("ZG_madgraph_histos.root","READ");
+  TH1D * hPhoton_wePt;	   hPhoton_wePt = (TH1D*)	  madgraph->Get("hPhoton_wePt");	   
+  TH1D * hPhoton_weEta;	   hPhoton_weEta= (TH1D*)	  madgraph->Get("hPhoton_weEta");	   
+  TH1D * hPhoton_wePhi;	   hPhoton_wePhi= (TH1D*)	  madgraph->Get("hPhoton_wePhi");	   
+  TH1D * hPhoton_wmPt;	   hPhoton_wmPt= (TH1D*)	  madgraph->Get("hPhoton_wmPt");	   
+  TH1D * hPhoton_wmEta;	   hPhoton_wmEta= (TH1D*)	  madgraph->Get("hPhoton_wmEta");	   
+  TH1D * hPhoton_wmPhi;	   hPhoton_wmPhi= (TH1D*)	  madgraph->Get("hPhoton_wmPhi");	   
+  TH1D * hPhoton_wtPt;	   hPhoton_wtPt= (TH1D*)	  madgraph->Get("hPhoton_wtPt");	   
+  TH1D * hPhoton_wtEta;	   hPhoton_wtEta= (TH1D*)	  madgraph->Get("hPhoton_wtEta");	   
+  TH1D * hPhoton_wtPhi;	   hPhoton_wtPhi= (TH1D*)	  madgraph->Get("hPhoton_wtPhi");	   
+  TH1D * hTriobject_wePt;  hTriobject_wePt= (TH1D*)    	  madgraph->Get("hTriobject_wePt");    
+  TH1D * hTriobject_weMass;hTriobject_weMass= (TH1D*)  	  madgraph->Get("hTriobject_weMass");  
+  TH1D * hTriobject_weEta; hTriobject_weEta= (TH1D*)   	  madgraph->Get("hTriobject_weEta");   
+  TH1D * hTriobject_wePhi; hTriobject_wePhi= (TH1D*)   	  madgraph->Get("hTriobject_wePhi");   
+  TH1D * hTriobject_wmPt;  hTriobject_wmPt= (TH1D*)    	  madgraph->Get("hTriobject_wmPt");    
+  TH1D * hTriobject_wmMass;hTriobject_wmMass= (TH1D*)  	  madgraph->Get("hTriobject_wmMass");  
+  TH1D * hTriobject_wmEta; hTriobject_wmEta= (TH1D*)   	  madgraph->Get("hTriobject_wmEta");   
+  TH1D * hTriobject_wmPhi; hTriobject_wmPhi= (TH1D*)   	  madgraph->Get("hTriobject_wmPhi");   
+  TH1D * hTriobject_wtPt;  hTriobject_wtPt= (TH1D*)    	  madgraph->Get("hTriobject_wtPt");    
+  TH1D * hTriobject_wtMass;hTriobject_wtMass= (TH1D*)  	  madgraph->Get("hTriobject_wtMass");  
+  TH1D * hTriobject_wtEta; hTriobject_wtEta= (TH1D*)   	  madgraph->Get("hTriobject_wtEta");   
+  TH1D * hTriobject_wtPhi; hTriobject_wtPhi= (TH1D*)   	  madgraph->Get("hTriobject_wtPhi");   
+  TH1D * hDelta_weR;	   hDelta_weR= (TH1D*)	   	  madgraph->Get("hDelta_weR");	   
+  TH1D * hDelta_wmR;	   hDelta_wmR= (TH1D*)	   	  madgraph->Get("hDelta_wmR");	   
+  TH1D * hDelta_wtR;	   hDelta_wtR= (TH1D*)	   	  madgraph->Get("hDelta_wtR");	   
+  TH1D * hElectronPlusPt;  hElectronPlusPt= (TH1D*)    	  madgraph->Get("hElectronPlusPt");    
+  TH1D * hElectronMinusPt; hElectronMinusPt= (TH1D*)   	  madgraph->Get("hElectronMinusPt");   
+  TH1D * hElectronPlusEta; hElectronPlusEta= (TH1D*)   	  madgraph->Get("hElectronPlusEta");   
+  TH1D * hElectronMinusEta;hElectronMinusEta= (TH1D*)  	  madgraph->Get("hElectronMinusEta");  
+  TH1D * hElectronPlusPhi; hElectronPlusPhi= (TH1D*)   	  madgraph->Get("hElectronPlusPhi");   
+  TH1D * hElectronMinusPhi;hElectronMinusPhi= (TH1D*)  	  madgraph->Get("hElectronMinusPhi");  
+  TH1D * hMuonPlusPt;	   hMuonPlusPt= (TH1D*)	   	  madgraph->Get("hMuonPlusPt");	   
+  TH1D * hMuonMinusPt;	   hMuonMinusPt= (TH1D*)	  madgraph->Get("hMuonMinusPt");	   
+  TH1D * hMuonPlusEta;	   hMuonPlusEta= (TH1D*)	  madgraph->Get("hMuonPlusEta");	   
+  TH1D * hMuonMinusEta;	   hMuonMinusEta= (TH1D*)	  madgraph->Get("hMuonMinusEta");	   
+  TH1D * hMuonPlusPhi;	   hMuonPlusPhi= (TH1D*)	  madgraph->Get("hMuonPlusPhi");	   
+  TH1D * hMuonMinusPhi;	   hMuonMinusPhi= (TH1D*)	  madgraph->Get("hMuonMinusPhi");	   
+  TH1D * hTauPlusPt;	   hTauPlusPt= (TH1D*)	   	  madgraph->Get("hTauPlusPt");	   
+  TH1D * hTauMinusPt;	   hTauMinusPt= (TH1D*)	   	  madgraph->Get("hTauMinusPt");	   
+  TH1D * hTauPlusEta;	   hTauPlusEta= (TH1D*)	   	  madgraph->Get("hTauPlusEta");	   
+  TH1D * hTauMinusEta;	   hTauMinusEta= (TH1D*)	  madgraph->Get("hTauMinusEta");	   
+  TH1D * hTauPlusPhi;	   hTauPlusPhi= (TH1D*)	   	  madgraph->Get("hTauPlusPhi");	   
+  TH1D * hTauMinusPhi;	   hTauMinusPhi= (TH1D*)	  madgraph->Get("hTauMinusPhi");	   
+  TH1D * hDilepton_wePt;		   hDilepton_wePt= (TH1D*)		  madgraph->Get("hEEPt");		   
+  TH1D * hDilepton_weMass;	   hDilepton_weMass= (TH1D*)	   	  madgraph->Get("hEEMass");	   
+  TH1D * hDilepton_weEta;	   hDilepton_weEta= (TH1D*)		  madgraph->Get("hEEEta");		   	   	   
+  TH1D * hDilepton_wmPt;		   hDilepton_wmPt= (TH1D*)		  madgraph->Get("hMMPt");		   
+  TH1D * hDilepton_wmMass;	   hDilepton_wmMass= (TH1D*)	   	  madgraph->Get("hMMMass");	   
+  TH1D * hDilepton_wmEta;	   hDilepton_wmEta= (TH1D*)		  madgraph->Get("hMMEta");		   	   	   
+  TH1D * hDilepton_wtPt;		   hDilepton_wtPt= (TH1D*)		  madgraph->Get("hTTPt");		   
+  TH1D * hDilepton_wtMass;	   hDilepton_wtMass= (TH1D*)	   	  madgraph->Get("hTTMass");	   
+  TH1D * hDilepton_wtEta;	   hDilepton_wtEta= (TH1D*)		  madgraph->Get("hTTEta");		   	   	   
+  TH1D * hDilepton_wtPhi;           hDilepton_wtPhi= (TH1D*)             	  madgraph->Get("hTTPhi");
+  
+  TFile *eppt = TFile::Open("EEG_100k_histos.root","READ");
+  TH1D * h_ePhotonPt;	  h_ePhotonPt = (TH1D*)	  eppt->Get("hPhotonPt");	 
+  TH1D * h_ePhotonEta;	  h_ePhotonEta = (TH1D*)	  eppt->Get("hPhotonEta");	 
+  TH1D * h_ePhotonPhi;	  h_ePhotonPhi = (TH1D*)	  eppt->Get("hPhotonPhi");	 
+  TH1D * h_eLeptonPt;	  h_eLeptonPt = (TH1D*)	  eppt->Get("hLeptonPt");	 
+  TH1D * h_eLeptonEta;	  h_eLeptonEta = (TH1D*)	  eppt->Get("hLeptonEta");	 
+  TH1D * h_eLeptonPhi;	  h_eLeptonPhi = (TH1D*)	  eppt->Get("hLeptonPhi");	 
+  TH1D * h_eLeptonPlusPt;	  h_eLeptonPlusPt = (TH1D*)  eppt->Get("hLeptonPlusPt");	 	 
+  TH1D * h_eLeptonPlusEta;  h_eLeptonPlusEta = (TH1D*) eppt->Get("hLeptonPlusEta"); 	
+  TH1D * h_eLeptonPlusPhi;  h_eLeptonPlusPhi = (TH1D*) eppt->Get("hLeptonPlusPhi"); 	
+  TH1D * h_eLeptonMinusPt;  h_eLeptonMinusPt = (TH1D*) eppt->Get("hLeptonMinusPt"); 	
+  TH1D * h_eLeptonMinusEta; h_eLeptonMinusEta = (TH1D*)eppt->Get("hLeptonMinusEta");	
+  TH1D * h_eLeptonMinusPhi; h_eLeptonMinusPhi = (TH1D*)eppt->Get("hLeptonMinusPhi");	
+  TH1D * h_eDileptonPt;	  h_eDileptonPt = (TH1D*)	  eppt->Get("hDileptonPt");	 
+  TH1D * h_eDileptonMass;	  h_eDileptonMass = (TH1D*)  eppt->Get("hDileptonMass");	 	 
+  TH1D * h_eDileptonEta;	  h_eDileptonEta = (TH1D*) eppt->Get("hDileptonEta");	 
+  TH1D * h_eTriobjectPt;	  h_eTriobjectPt = (TH1D*) eppt->Get("hTriobjectPt");	 
+  TH1D * h_eTriobjectMass;  h_eTriobjectMass = (TH1D*) eppt->Get("hTriobjectMass"); 	
+  TH1D * h_eTriobjectEta;	  h_eTriobjectEta = (TH1D*)  eppt->Get("hTriobjectEta");	 	 
+  TH1D * h_eTriobjectPhi;	  h_eTriobjectPhi = (TH1D*)  eppt->Get("hTriobjectPhi");	 	 
+  TH1D * h_eDeltaR;	  h_eDeltaR = (TH1D*)	  eppt->Get("hDeltaR");	 
+  //  TH1D * hPiPiMass;       hPiPiMass = (TH1D*)      eppt->Get("hPiPiMass");      	
+  TFile *muppt = TFile::Open("MMG_100k_histos.root","READ");
+  TH1D * h_muPhotonPt;	  h_muPhotonPt = (TH1D*)	  eppt->Get("hPhotonPt");	 
+  TH1D * h_muPhotonEta;	  h_muPhotonEta = (TH1D*)	  eppt->Get("hPhotonEta");	 
+  TH1D * h_muPhotonPhi;	  h_muPhotonPhi = (TH1D*)	  eppt->Get("hPhotonPhi");	 
+  TH1D * h_muLeptonPt;	  h_muLeptonPt = (TH1D*)	  eppt->Get("hLeptonPt");	 
+  TH1D * h_muLeptonEta;	  h_muLeptonEta = (TH1D*)	  eppt->Get("hLeptonEta");	 
+  TH1D * h_muLeptonPhi;	  h_muLeptonPhi = (TH1D*)	  eppt->Get("hLeptonPhi");	 
+  TH1D * h_muLeptonPlusPt;	  h_muLeptonPlusPt = (TH1D*)  eppt->Get("hLeptonPlusPt");	 	 
+  TH1D * h_muLeptonPlusEta;  h_muLeptonPlusEta = (TH1D*) eppt->Get("hLeptonPlusEta"); 	
+  TH1D * h_muLeptonPlusPhi;  h_muLeptonPlusPhi = (TH1D*) eppt->Get("hLeptonPlusPhi"); 	
+  TH1D * h_muLeptonMinusPt;  h_muLeptonMinusPt = (TH1D*) eppt->Get("hLeptonMinusPt"); 	
+  TH1D * h_muLeptonMinusEta; h_muLeptonMinusEta = (TH1D*)eppt->Get("hLeptonMinusEta");	
+  TH1D * h_muLeptonMinusPhi; h_muLeptonMinusPhi = (TH1D*)eppt->Get("hLeptonMinusPhi");	
+  TH1D * h_muDileptonPt;	  h_muDileptonPt = (TH1D*)	  eppt->Get("hDileptonPt");	 
+  TH1D * h_muDileptonMass;	  h_muDileptonMass = (TH1D*)  eppt->Get("hDileptonMass");	 	 
+  TH1D * h_muDileptonEta;	  h_muDileptonEta = (TH1D*) eppt->Get("hDileptonEta");	 
+  TH1D * h_muTriobjectPt;	  h_muTriobjectPt = (TH1D*) eppt->Get("hTriobjectPt");	 
+  TH1D * h_muTriobjectMass;  h_muTriobjectMass = (TH1D*) eppt->Get("hTriobjectMass"); 	
+  TH1D * h_muTriobjectEta;	  h_muTriobjectEta = (TH1D*)  eppt->Get("hTriobjectEta");	 	 
+  TH1D * h_muTriobjectPhi;	  h_muTriobjectPhi = (TH1D*)  eppt->Get("hTriobjectPhi");	 	 
+  TH1D * h_muDeltaR;	  h_muDeltaR = (TH1D*)	  eppt->Get("hDeltaR");
+  
+  TFile *tauppt = TFile::Open("TTGSPIN_histos.root","READ");
+  TH1D * h_tauPhotonPt;	  h_tauPhotonPt = (TH1D*)	  eppt->Get("hPhotonPt");	 
+  TH1D * h_tauPhotonEta;	  h_tauPhotonEta = (TH1D*)	  eppt->Get("hPhotonEta");	 
+  TH1D * h_tauPhotonPhi;	  h_tauPhotonPhi = (TH1D*)	  eppt->Get("hPhotonPhi");	 
+  TH1D * h_tauLeptonPt;	  h_tauLeptonPt = (TH1D*)	  eppt->Get("hLeptonPt");	 
+  TH1D * h_tauLeptonEta;	  h_tauLeptonEta = (TH1D*)	  eppt->Get("hLeptonEta");	 
+  TH1D * h_tauLeptonPhi;	  h_tauLeptonPhi = (TH1D*)	  eppt->Get("hLeptonPhi");	 
+  TH1D * h_tauLeptonPlusPt;	  h_tauLeptonPlusPt = (TH1D*)  eppt->Get("hLeptonPlusPt");	 	 
+  TH1D * h_tauLeptonPlusEta;  h_tauLeptonPlusEta = (TH1D*) eppt->Get("hLeptonPlusEta"); 	
+  TH1D * h_tauLeptonPlusPhi;  h_tauLeptonPlusPhi = (TH1D*) eppt->Get("hLeptonPlusPhi"); 	
+  TH1D * h_tauLeptonMinusPt;  h_tauLeptonMinusPt = (TH1D*) eppt->Get("hLeptonMinusPt"); 	
+  TH1D * h_tauLeptonMinusEta; h_tauLeptonMinusEta = (TH1D*)eppt->Get("hLeptonMinusEta");	
+  TH1D * h_tauLeptonMinusPhi; h_tauLeptonMinusPhi = (TH1D*)eppt->Get("hLeptonMinusPhi");	
+  TH1D * h_tauDileptonPt;	  h_tauDileptonPt = (TH1D*)	  eppt->Get("hDileptonPt");	 
+  TH1D * h_tauDileptonMass;	  h_tauDileptonMass = (TH1D*)  eppt->Get("hDileptonMass");	 	 
+  TH1D * h_tauDileptonEta;	  h_tauDileptonEta = (TH1D*) eppt->Get("hDileptonEta");	 
+  TH1D * h_tauTriobjectPt;	  h_tauTriobjectPt = (TH1D*) eppt->Get("hTriobjectPt");	 
+  TH1D * h_tauTriobjectMass;  h_tauTriobjectMass = (TH1D*) eppt->Get("hTriobjectMass"); 	
+  TH1D * h_tauTriobjectEta;	  h_tauTriobjectEta = (TH1D*)  eppt->Get("hTriobjectEta");	 	 
+  TH1D * h_tauTriobjectPhi;	  h_tauTriobjectPhi = (TH1D*)  eppt->Get("hTriobjectPhi");	 	 
+  TH1D * h_tauDeltaR;	  h_tauDeltaR = (TH1D*)	  eppt->Get("hDeltaR");
+
+  // photon pt 
+  draw_overlay(h_ePhotonPt,hPhoton_wePt,"Photon","Pt","e");
+  draw_overlay(h_muPhotonPt,hPhoton_wmPt,"Photon","Pt","mu");
+  draw_overlay(h_tauPhotonPt,hPhoton_wtPt,"Photon","Pt","tau");
+    // photon eta
+   draw_overlay(h_ePhotonEta,hPhoton_weEta,"Photon","Eta","e");
+  draw_overlay(h_muPhotonEta,hPhoton_wmEta,"Photon","Eta","mu");
+  draw_overlay(h_tauPhotonEta,hPhoton_wtEta,"Photon","Eta","tau");
+  // photon phi
+  draw_overlay(h_ePhotonPhi,hPhoton_wePhi,"Photon","Phi","e");
+  draw_overlay(h_muPhotonPhi,hPhoton_wmPhi,"Photon","Phi","mu");
+  draw_overlay(h_tauPhotonPhi,hPhoton_wtPhi,"Photon","Phi","tau");
+
+  // lepton pt 
+  draw_overlay(h_eLeptonPt,hElectronPlusPt,"Lepton","Pt","e");
+  draw_overlay(h_muLeptonPt,hMuonPlusPt,"Lepton","Pt","mu");
+  draw_overlay(h_tauLeptonPt,hTauPlusPt,"Lepton","Pt","tau");
+  // lepton eta
+  draw_overlay(h_eLeptonEta,hElectronPlusEta,"Lepton","Eta","e");
+  draw_overlay(h_muLeptonEta,hMuonPlusEta,"Lepton","Eta","mu");
+  draw_overlay(h_tauLeptonEta,hTauPlusEta,"Lepton","Eta","tau");
+  // lepton phi
+  draw_overlay(h_eLeptonPhi,hElectronPlusPhi,"Lepton","Phi","e");
+  draw_overlay(h_muLeptonPhi,hMuonPlusPhi,"Lepton","Phi","mu");
+  draw_overlay(h_tauLeptonPhi,hTauPlusPhi,"Lepton","Phi","tau");
+
+  // dilepton pt 
+  draw_overlay(h_eDileptonPt,hDilepton_wePt,"Dilepton","Pt","e");
+  draw_overlay(h_muDileptonPt,hDilepton_wmPt,"Dilepton","Pt","mu");
+  draw_overlay(h_tauDileptonPt,hDilepton_wtPt,"Dilepton","Pt","tau");
+  // dilepton eta
+  draw_overlay(h_eDileptonEta,hDilepton_weEta,"Dilepton","Eta","e");
+  draw_overlay(h_muDileptonEta,hDilepton_wmEta,"Dilepton","Eta","mu");
+  draw_overlay(h_tauDileptonEta,hDilepton_wtEta,"Dilepton","Eta","tau");
+  // dilepton mass
+  draw_overlay(h_eDileptonMass,hDilepton_weMass,"Dilepton","Mass","e");
+  draw_overlay(h_muDileptonMass,hDilepton_wmMass,"Dilepton","Mass","mu");
+  draw_overlay(h_tauDileptonMass,hDilepton_wtMass,"Dilepton","Mass","tau");
+
+  // triobject pt 
+  draw_overlay(h_eTriobjectPt,hTriobject_wePt,"Triobject","Pt","e");
+  draw_overlay(h_muTriobjectPt,hTriobject_wmPt,"Triobject","Pt","mu");
+  draw_overlay(h_tauTriobjectPt,hTriobject_wtPt,"Triobject","Pt","tau");
+  // triobject eta
+  draw_overlay(h_eTriobjectEta,hTriobject_weEta,"Triobject","Eta","e");
+  draw_overlay(h_muTriobjectEta,hTriobject_wmEta,"Triobject","Eta","mu");
+  draw_overlay(h_tauTriobjectEta,hTriobject_wtEta,"Triobject","Eta","tau");
+  // triobject mass
+  draw_overlay(h_eTriobjectMass,hTriobject_weMass,"Triobject","Mass","e");
+  draw_overlay(h_muTriobjectMass,hTriobject_wmMass,"Triobject","Mass","mu");
+  draw_overlay(h_tauTriobjectMass,hTriobject_wtMass,"Triobject","Mass","tau");
+
+  // delta R
+  draw_overlay(h_tauDeltaR, hDelta_wtR, "Delta","R","tau");
+  draw_overlay(h_muDeltaR, hDelta_wmR, "Delta","R","mu");
+  draw_overlay(h_eDeltaR, hDelta_weR, "Delta","R","e");
 }
 
 void drawPlots(){
@@ -1051,13 +1233,13 @@ void plotMG(){
   TFile plots("ZG_madgraph_histos.root","RECREATE");
 
   TH1D* hPhoton_wePt = new TH1D("hPhoton_wePt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
-  TH1D* hPhoton_weEta = new TH1D("hPhoton_weEta",";#eta_{#gamma}",50,-3.,3.);
+  TH1D* hPhoton_weEta = new TH1D("hPhoton_weEta",";#eta_{#gamma}",50,-2.6,2.6);
   TH1D* hPhoton_wePhi = new TH1D("hPhoton_wePhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
   TH1D* hPhoton_wmPt = new TH1D("hPhoton_wmPt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
-  TH1D* hPhoton_wmEta = new TH1D("hPhoton_wmEta",";#eta_{#gamma}",50,-3.,3.);
+  TH1D* hPhoton_wmEta = new TH1D("hPhoton_wmEta",";#eta_{#gamma}",50,-2.6,2.6);
   TH1D* hPhoton_wmPhi = new TH1D("hPhoton_wmPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
   TH1D* hPhoton_wtPt = new TH1D("hPhoton_wtPt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
-  TH1D* hPhoton_wtEta = new TH1D("hPhoton_wtEta",";#eta_{#gamma}",50,-3.,3.);
+  TH1D* hPhoton_wtEta = new TH1D("hPhoton_wtEta",";#eta_{#gamma}",50,-2.6,2.6);
   TH1D* hPhoton_wtPhi = new TH1D("hPhoton_wtPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
 
   TH1D* hTriobject_wePt  = new TH1D("hTriobject_wePt",";p_{T}_{ee#gamma} [GeV/c]",50,0,200);
@@ -1101,17 +1283,17 @@ void plotMG(){
   TH1D* hTauMinusPhi = new TH1D("hTauMinusPhi",";#phi_{#tau-}",50,-3.1415926536,-3.1415926536);
 
   TH1D* hEEPt = new TH1D("hEEPt",";p_{T}_{ee} [GeV/c]",50,0,200);
-  TH1D* hEEMass = new TH1D("hEEMass",";m_{ee} [GeV/c^{2}]",50,0,200);
+  TH1D* hEEMass = new TH1D("hEEMass",";m_{ee} [GeV/c^{2}]",50,50,200);
   TH1D* hEERapidity  = new TH1D("hEEEta",";y_{ee}",50,-3.,3.);
   TH1D* hMMPt = new TH1D("hMMPt",";p_{T}_{#mu#mu} [GeV/c]",50,0,200);
-  TH1D* hMMMass = new TH1D("hMMMass",";m_{#mu#mu} [GeV/c^{2}]",50,0,200);
+  TH1D* hMMMass = new TH1D("hMMMass",";m_{#mu#mu} [GeV/c^{2}]",50,50,200);
   TH1D* hMMRapidity = new TH1D("hMMEta",";y_{#mu#mu}",50,-3.,3.);
   TH1D* hTTPt = new TH1D("hTTPt",";p_{T}_{#tau#tau} [GeV/c]",50,0,200);
-  TH1D* hTTMass = new TH1D("hTTMass",";m_{#tau#tau} [GeV/c^{2}]",50,0,200);
+  TH1D* hTTMass = new TH1D("hTTMass",";m_{#tau#tau} [GeV/c^{2}]",50,50,200);
   TH1D* hTTRapidity = new TH1D("hTTEta",";y_{#tau#tau}",50,-3.,3.);
   TH1D* hTTPhi = new TH1D("hTTPhi",";#phi_{#tau#tau}",50,-3.1415926536,-3.1415926536);
 
-  //  TTreeReaderValue<Long64_t> rvEventNumber(myReader, "Event.Number");
+  //  TTreeReaderValue<Long64_t> rvEventNum_EPhoton_Ptber(myReader, "Event.Number");
   TTreeReaderValue<Int_t> rvParticle_size(myReader, "Particle_size");
   TTreeReaderArray<Int_t> raParticlePID(myReader, "Particle.PID");
   TTreeReaderArray<Int_t> raParticleStatus(myReader, "Particle.Status");
@@ -1193,7 +1375,7 @@ void plotMG(){
     // if ((event_m && event_e) || (event_e && event_t) || (event_t && event_m)){
     //   std::cout <<"at least two flavors in this event!"<< std::endl;
     // }
-    if (electronpt > 15 && antielectronpt >15 && photonpt >10) {
+    if (electronpt > 15 && antielectronpt >15 && photonpt >10 && abs(photoneta) <2.6 && abs(electroneta)< 3. && abs(antielectroneta) < 3) {
       Z = electron + antielectron;
       deltaR_m = sqrt(
       		      pow((photon.Eta() - electron.Eta()),2) +
@@ -1203,7 +1385,7 @@ void plotMG(){
       		      pow((photon.Eta() - antielectron.Eta()),2) +
       		      pow((photon.Phi() - antielectron.Phi()),2)
       		      );
-      if(min(deltaR_m,deltaR_p) > 0.05){
+      if(min(deltaR_m,deltaR_p) > 0.6 && Z.M()>50 ){
 	hElectronMinusPt->Fill(electronpt);
 	hElectronMinusEta->Fill(electroneta);
 	hElectronMinusPhi->Fill(electronphi);
@@ -1218,13 +1400,15 @@ void plotMG(){
 	hEEMass->Fill((double)Z.M());
 	hEERapidity->Fill((double)Z.Rapidity());
 	hDelta_weR->Fill(min(deltaR_m,deltaR_p));
+	if (Zgamma.Pt()!=0){
 	hTriobject_wePt->Fill((double)Zgamma.Pt());
 	hTriobject_weEta->Fill((double)Zgamma.Rapidity());
 	hTriobject_wePhi->Fill((double)Zgamma.Phi());
 	hTriobject_weMass->Fill((double)Zgamma.M());
+	}
       }
     }
-    if (muonpt > 15 && antimuonpt >15 && photonpt >10) {
+    if (muonpt > 15 && antimuonpt >15 && photonpt >10  && abs(photoneta) <2.6 && abs(muoneta)< 3. && abs(antimuoneta) < 3) {
       Z = muon + antimuon;
       deltaR_m = sqrt(
 		      pow((photon.Eta() - muon.Eta()),2) +
@@ -1234,7 +1418,7 @@ void plotMG(){
 		      pow((photon.Eta() - antimuon.Eta()),2) +
 		      pow((photon.Phi() - antimuon.Phi()),2)
 		      );
-      if(min(deltaR_m,deltaR_p) > 0.05){
+      if(min(deltaR_m,deltaR_p) > 0.6  && Z.M()>50){
 	hMuonMinusPt->Fill(muonpt);
 	hMuonMinusEta->Fill(muoneta);
 	hMuonMinusPhi->Fill(muonphi);
@@ -1255,7 +1439,7 @@ void plotMG(){
 	hTriobject_wmMass->Fill((double)Zgamma.M());
       }
     }
-    if (taupt > 15 && antitaupt >15 && photonpt >10) {
+    if (taupt > 15 && antitaupt >15 && photonpt >10  && abs(photoneta) <2.6  && abs(taueta)< 3. && abs(antitaueta) < 3) {
       Z = tau + antitau;
       deltaR_m = sqrt(
 		      pow((photon.Eta() - tau.Eta()),2) +
@@ -1265,7 +1449,7 @@ void plotMG(){
 		      pow((photon.Eta() - antitau.Eta()),2) +
 		      pow((photon.Phi() - antitau.Phi()),2)
 		      );
-      if(min(deltaR_m,deltaR_p) > 0.05){
+      if(min(deltaR_m,deltaR_p) > 0.6  && Z.M()>50){
 	hTauMinusPt->Fill(taupt);
 	hTauMinusEta->Fill(taueta);
 	hTauMinusPhi->Fill(tauphi);
@@ -1299,4 +1483,98 @@ void plotMG(){
   //     // }// particle loop
   // }//entry loop
   //}//lepton flavour loop
+}
+
+void draw_overlay(TH1D* a, TH1D* b, string particle, string observable, string channel){
+ // photon
+
+  TH1D * num = new TH1D(); num = (TH1D*) a->Clone();
+  TH1D * den = new TH1D(); den = (TH1D*) b->Clone();
+  string name = channel+"_"+particle+"_"+observable;
+  TCanvas *c = new TCanvas(name.c_str(),name.c_str(),0,45,600,600);
+  c->cd();
+  //  num->GetXaxis()->SetTitle("EDIT ME [GeV/c]");
+  num->GetXaxis()->SetTitleOffset(1.05);
+  den->Sumw2();
+  num->Sumw2();
+  TH1D * num_ratio = (TH1D*) num->Clone();   TH1D * den_ratio = (TH1D*) den->Clone();
+  den->Scale(1/den->GetEntries(),"width");
+  num->Scale(1/num->GetEntries(),"width");
+
+  TPad *p = new TPad("pad","Pad",0,0.1,1,1);
+  p->Draw();  p->cd();
+  p->SetLogy();
+  den->SetMarkerSize(1);
+  den->SetMarkerStyle(20);
+  
+  if (channel == "mu"){   num->SetFillColor(kRed+1);
+  } else if (channel == "tau"){ num->SetFillColor(kGreen+1);
+  } else {  num->SetFillColor(kAzure+1);
+  }
+  num->SetMarkerStyle(20);
+  num->SetMarkerSize(0);
+
+  num->GetXaxis()->SetTitleSize(0.05);
+  num->Draw("e2");
+  den->Draw("psame");
+
+  TLegend *leg = new TLegend (0.62,0.62,0.9,0.9,NULL,"brNDC");
+  leg->SetBorderSize(0);
+  leg->SetTextSize(0.05);
+  leg->SetLineColor(1);
+  leg->SetLineStyle(1);
+  leg->SetLineWidth(1);
+  //   leg2->SetFillColor(0);
+  leg->SetFillStyle(0);
+  TLegendEntry *legentry1 = leg->AddEntry(num->GetName(),"Sherpa","f");
+  // legentry1->SetLineColor(1);
+  // legentry1->SetLineStyle(1);
+  // legentry1->SetLineWidth(1);
+  // legentry1->SetMarkerColor(1);
+  // legentry1->SetMarkerStyle(21);
+  // legentry1->SetMarkerSize(1);
+  legentry1=leg->AddEntry(den->GetName(),"Madgraph","p");
+  // legentry1->SetLineColor(1);
+  // legentry1->SetLineStyle(1);
+  // legentry1->SetLineWidth(1);
+  // legentry1->SetMarkerColor(1);
+  // legentry1->SetMarkerStyle(21);
+  // legentry1->SetMarkerSize(1);
+  leg->Draw();
+  p->Modified();
+  c->cd();
+
+  TPad *r = new TPad("ratio","Ratio",0,0.0,1,0.2);
+  r->Draw();
+  r->cd();
+  r->SetBottomMargin(0.35); 
+  //  ratio->SetFillStyle(3001);
+  //  ratio->Sumw2();
+  //  num_ratio->Sumw2(); den_ratio->Sumw2();
+  num_ratio->Scale(den->GetEntries()/num->GetEntries());
+  num_ratio->Divide(den_ratio);
+  num_ratio->GetXaxis()->SetTitleSize(0.14);
+  num_ratio->GetYaxis()->SetTitleSize(0.1);
+  num_ratio->GetYaxis()->SetTitleOffset(0.29);
+  num_ratio->GetYaxis()->SetTitle("Sherpa/MG");
+  num_ratio->GetYaxis()->CenterTitle(kTRUE);
+  num_ratio->GetXaxis()->CenterTitle(kTRUE);
+
+  if (particle == "Triobject"){
+    num_ratio->GetYaxis()->SetRangeUser(0,5.5);
+  }
+  num_ratio->GetYaxis()->SetRangeUser(0,2.5);
+  num_ratio->GetYaxis()->SetTitleSize(0.14);
+  num_ratio->GetXaxis()->SetLabelSize(0.14);
+  num_ratio->GetYaxis()->SetLabelSize(0.14);
+  num_ratio->GetXaxis()->SetLabelOffset(0.009);
+  num_ratio->GetYaxis()->SetLabelOffset(0.009);
+  num_ratio->Draw("p2same");
+  string cname = "plots/C/Sherpa_vs_madgraph_"+name+".C";
+  string pdfname = "plots/pdf/Sherpa_vs_madgraph_"+name+".pdf";
+  string pngname = "plots/png/Sherpa_vs_madgraph_"+name+".png";
+  c->SaveAs(cname.c_str());
+  c->SaveAs(pdfname.c_str());
+  c->SaveAs(pngname.c_str());
+  c->Close();
 }
