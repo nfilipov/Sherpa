@@ -56,11 +56,21 @@ const  ofstream ofSyst;
 const float gTextSize = 0.04;
 
 void draw_overlay(TH1D*, TH1D* , string, string , string);
+
+void drawPlots();
+
+void overlays();
+
+void plotMG();
 		  
 void SherpaKinematics()
 {
   //setting the style
   setTDRStyle();
+
+  ///
+  /// declaring raw histograms
+  ///
 
   TH1D* hPhotonPt[4]    ;
   TH1D* hPhotonEta[4]   ;
@@ -71,12 +81,12 @@ void SherpaKinematics()
   TH1D* hLeptonEta[4]   ;
   TH1D* hLeptonPhi[4]   ;
 
-    //lepton histograms (p
+  //lepton histograms ( was meant to check the lepton plus/minus discrepancy, if there is one )
   TH1D* hLeptonPlusPt[4]    ;
   TH1D* hLeptonPlusEta[4]   ;
   TH1D* hLeptonPlusPhi[4]   ;
 
-      //lepton histograms (p
+  //lepton histograms 
   TH1D* hLeptonMinusPt[4]    ;
   TH1D* hLeptonMinusEta[4]   ;
   TH1D* hLeptonMinusPhi[4]   ;
@@ -90,17 +100,26 @@ void SherpaKinematics()
   TH1D* hTriobjectMass[4];
   TH1D* hTriobjectEta[4];
   TH1D* hTriobjectPhi[4];
+
+  // pi-pi histogram for tau decays
   TH1D* hPiPiMass[2];
 
+  // lepton-photon distance in the phi-eta plane
   TH1D* hDeltaR[4];
+
+  ///
+  /// loop reading the sherpa output files
+  ///
   for (int i = 0; i < 4; i++){
 
     TString inputFileName (basedir+Trees[i]+".root");
     TFile *f = TFile::Open(inputFileName,"READ");
     TTree *t = (TTree*) f->Get("myTree");
 
+    /// creating the output root file for histograms
     TFile plots(basedir+Trees[i]+"_histos.root","RECREATE");
 
+    // physical quantities
     TLorentzVector p,m,g[50],ll,llg[50],pip,pim,pipi;
     double _ppt,_peta,_pphi,_pm,
       _mpt,_meta,_mphi,_mm,
@@ -109,15 +128,16 @@ void SherpaKinematics()
       _pimpt,_pimeta,_pimphi,_pimm,
       _dRpp, _dRpm; // delta R between photon and lepton(plus/minus)
 
+    /// photon variables are vectors because in GEN events there can be more than one final state photon
     std::vector<double> *_photonpt=0;
     std::vector<double> *_photoneta=0;
     std::vector<double> *_photonm=0;
     std::vector<double> *_photonphi=0;
 
-    //     _llpt,_lleta,_llphi,_llm,
-    //  _llgpt,_llgeta,_llgphi,_llgm;
-
     int nldm, nldp; // number of lepton daughters
+
+    // for the new tree, branching physical quantities
+    
     t->SetBranchAddress("nldp",&nldp);
     t->SetBranchAddress("nldm",&nldm);
 
@@ -146,6 +166,10 @@ void SherpaKinematics()
     t->SetBranchAddress("TauMinusPiPhi",&_pimphi);
     t->SetBranchAddress("TauMinusPiMass",&_pimm);
 
+    //
+    // defining the raw histograms, now with a binning and name/title
+    //
+    
     hPhotonPt[i]     = new TH1D("hPhotonPt",";p_{T}_{#gamma} [GeV/c]",50,10,110);
     hPhotonEta[i]    = new TH1D("hPhotonEta",";#eta_{#gamma}",50,-2.6,2.6);
     hPhotonPhi[i]    = new TH1D("hPhotonPhi",";#phi_{#gamma}",50,-3.1415926536,-3.1415926536);
@@ -175,102 +199,102 @@ void SherpaKinematics()
     hTriobjectPhi[i]  = new TH1D("hTriobjectPhi",";#phi_{ll#gamma}",50,-3.1415926536,3.1415926536);
 
     hDeltaR[i] =  new TH1D("hDeltaR",";#DeltaR(l,#gamma)",80,0,8);
-    
-    //pipi histogram
+
+    //pipi histogram: if i>1 means if i=2 (tautau no spin) or i=3 (tautau with spin)
     if (i>1){
       hPiPiMass[i-2] = new TH1D("hPiPiMass",";m_{#pi#pi} [GeV/c^{2}]",20,0,100);
     }
     //
-    //let's-a-go
+    //let's-a-go: entry loop
     int entries = t->GetEntries();
     for (int _i = 0 ; _i < entries ; _i++){
       t->GetEntry(_i);
 
-      // if the lepton + and the lepton - have pt > 10 GeV
-      if( true /*_ppt > 10 && _mpt > 10*/){
-	
-	// building the lepton +, lepton -, and leptonlepton objects
+      //
+      // defining the raw histograms, now with a binning and name/title
+      //
+      
+      // building the lepton +, lepton -, and leptonlepton objects
 
-	p.SetPtEtaPhiM(_ppt,_peta,_pphi,_pm);
-	m.SetPtEtaPhiM(_mpt,_meta,_mphi,_mm);
+      p.SetPtEtaPhiM(_ppt,_peta,_pphi,_pm);
+      m.SetPtEtaPhiM(_mpt,_meta,_mphi,_mm);
 	
-	ll = p+m;
+      ll = p+m;
 	
-	// associating the photons to the leptonlepton pair
+      // associating the photons to the leptonlepton pair
 
-	std::vector<double>::const_iterator pt;
-	std::vector<double>::const_iterator eta;
-	std::vector<double>::const_iterator phi;
-	std::vector<double>::const_iterator m;
+      std::vector<double>::const_iterator pt;
+      std::vector<double>::const_iterator eta;
+      std::vector<double>::const_iterator phi;
+      std::vector<double>::const_iterator m;
 
-	int order=0;
+      int order=0;
 
-	// looping over the contents of 4 vectors, to build the photon TLorentzVector
+      // looping over the contents of 4 vectors, to build the photon TLorentzVector
 	
-	for( pt = _photonpt->begin(), eta = _photoneta->begin(), phi = _photonphi->begin(), m = _photonm->begin();
-	     pt < _photonpt->end() && eta < _photoneta->end() && phi < _photonphi->end() && m < _photonm->end();
-	     ++pt, ++eta, ++phi, ++m )
-	  {
+      for( pt = _photonpt->begin(), eta = _photoneta->begin(), phi = _photonphi->begin(), m = _photonm->begin();
+	   pt < _photonpt->end() && eta < _photoneta->end() && phi < _photonphi->end() && m < _photonm->end();
+	   ++pt, ++eta, ++phi, ++m )
+	{
 	    
-	    _dRpp = 0;
-	    _dRpm = 0;
-	    // Photon TLV
-	    g[order].SetPtEtaPhiM(*pt,*eta,*phi,*m);
-	    // LLG TLV
-	    llg[order] = g[order] + ll;
+	  _dRpp = 0;
+	  _dRpm = 0;
+	  // Photon TLV
+	  g[order].SetPtEtaPhiM(*pt,*eta,*phi,*m);
+	  // LLG TLV
+	  llg[order] = g[order] + ll;
 	    
-	    if( _ppt > 15 && _mpt > 15 && *pt > 10 && abs(*eta)<2.6 && abs(_peta)<3 && abs(_meta)<3){
+	  if( _ppt > 15 && _mpt > 15 && *pt > 10 && abs(*eta)<2.6 && abs(_peta)<3 && abs(_meta)<3){
 	    
-	      _dRpp = sqrt(pow((_peta - *eta),2) + pow((_pphi - *phi ),2));
-	      _dRpm = sqrt(pow((_meta - *eta),2) + pow((_mphi - *phi ),2));
+	    _dRpp = sqrt(pow((_peta - *eta),2) + pow((_pphi - *phi ),2));
+	    _dRpm = sqrt(pow((_meta - *eta),2) + pow((_mphi - *phi ),2));
 
-	      if (min(_dRpp, _dRpm) > 0.6 && ll.M() > 50){
-		hLeptonPt[i]->Fill(_ppt);
-		hLeptonEta[i]->Fill(_peta);
-		hLeptonPhi[i]->Fill(_pphi);
+	    if (min(_dRpp, _dRpm) > 0.6 && ll.M() > 50){
+	      hLeptonPt[i]->Fill(_ppt);
+	      hLeptonEta[i]->Fill(_peta);
+	      hLeptonPhi[i]->Fill(_pphi);
 
-		hLeptonPlusPt[i]->Fill(_ppt);
-		hLeptonPlusEta[i]->Fill(_peta);
-		hLeptonPlusPhi[i]->Fill(_pphi);
+	      hLeptonPlusPt[i]->Fill(_ppt);
+	      hLeptonPlusEta[i]->Fill(_peta);
+	      hLeptonPlusPhi[i]->Fill(_pphi);
 
-		hLeptonMinusPt[i]->Fill(_mpt);
-		hLeptonMinusEta[i]->Fill(_meta);
-		hLeptonMinusPhi[i]->Fill(_mphi);
+	      hLeptonMinusPt[i]->Fill(_mpt);
+	      hLeptonMinusEta[i]->Fill(_meta);
+	      hLeptonMinusPhi[i]->Fill(_mphi);
 
-		hPhotonPt[i]->Fill(*pt);
-		hPhotonEta[i]->Fill(*eta);
-		hPhotonPhi[i]->Fill(*phi);
+	      hPhotonPt[i]->Fill(*pt);
+	      hPhotonEta[i]->Fill(*eta);
+	      hPhotonPhi[i]->Fill(*phi);
 		
-		hDileptonEta[i]->Fill(ll.Rapidity());
-		hDileptonMass[i]->Fill(ll.M());
-		hDileptonPt[i]->Fill(ll.Pt());
+	      hDileptonEta[i]->Fill(ll.Rapidity());
+	      hDileptonMass[i]->Fill(ll.M());
+	      hDileptonPt[i]->Fill(ll.Pt());
 		
-		hTriobjectPt[i]->Fill(llg[order].Pt());
-		hTriobjectMass[i]->Fill(llg[order].M());
-		hTriobjectEta[i]->Fill(llg[order].Rapidity());
-		hTriobjectPhi[i]->Fill(llg[order].Phi());
+	      hTriobjectPt[i]->Fill(llg[order].Pt());
+	      hTriobjectMass[i]->Fill(llg[order].M());
+	      hTriobjectEta[i]->Fill(llg[order].Rapidity());
+	      hTriobjectPhi[i]->Fill(llg[order].Phi());
 
-		hDeltaR[i]->Fill(min(_dRpp,_dRpm));
-	      }
+	      hDeltaR[i]->Fill(min(_dRpp,_dRpm));
 	    }
-	    order++;
-	  } // filling objects loop: done
-
-	if(i > 1 && (nldp == 2 && nldm == 2)) // when looking at the tau and tau+spin files, asking for tau(pinu)tau(pinu) decays only
-	  {
-	    pip.SetPtEtaPhiM(_pippt,_pipeta,_pipphi,_pipm);
-	    pim.SetPtEtaPhiM(_pimpt,_pimeta,_pimphi,_pimm);
-	    pipi = pip+pim;
-	    TLorentzVector tautau;
-	    tautau = ll;
-	    TVector3 tautauBoost = tautau.BoostVector();
-	    TLorentzVector pipi_comframe = pipi;
-	    pipi_comframe.Boost(-tautauBoost);
-	    //	    std::cout<<"tautau 4 momentum = ("<<tautau_comframe.E()<<", - "<<tautau_comframe.Px()<<", - "<<tautau_comframe.Py()<<", - "<<tautau_comframe.Pz()<<")"<<std::endl;
-	    
-	    if (pipi.M()>0) hPiPiMass[i-2]->Fill(pipi_comframe.M());
 	  }
-      }
+	  order++;
+	} // filling objects loop: done
+
+      if(i > 1 && (nldp == 2 && nldm == 2)) // when looking at the tau and tau+spin files, asking for tau(pinu)tau(pinu) decays only
+	{
+	  pip.SetPtEtaPhiM(_pippt,_pipeta,_pipphi,_pipm);
+	  pim.SetPtEtaPhiM(_pimpt,_pimeta,_pimphi,_pimm);
+	  pipi = pip+pim;
+	  TLorentzVector tautau;
+	  tautau = ll;
+	  TVector3 tautauBoost = tautau.BoostVector();
+	  TLorentzVector pipi_comframe = pipi;
+	  pipi_comframe.Boost(-tautauBoost);
+	  //	    std::cout<<"tautau 4 momentum = ("<<tautau_comframe.E()<<", - "<<tautau_comframe.Px()<<", - "<<tautau_comframe.Py()<<", - "<<tautau_comframe.Pz()<<")"<<std::endl;
+	    
+	  if (pipi.M()>0) hPiPiMass[i-2]->Fill(pipi_comframe.M());
+	}
     }
 
    
