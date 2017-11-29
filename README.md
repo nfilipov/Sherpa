@@ -1,7 +1,16 @@
-# Sherpa
 
-Get the package:
-```git clone https://github.com/nfilipov/Sherpa/ -d Sherpa```
+/!\ This package is a clone of CMSSW /!\
+
+Directories of interest for ZGamma simulation and related activities : 
+
+
+Sherpa gridpacks and python configs [https://github.com/nfilipov/Sherpa/tree/master/MY/PROJECT]
+
+Sherpa spin correlation studies [https://github.com/nfilipov/Sherpa/tree/master/SpinCorrelations/SpinCorrel]
+
+Sherpa analysis and comparison to Madgraph [https://github.com/nfilipov/Sherpa/tree/master/Sherpa]
+
+# Sherpa analysis and comparison to Madgraph
 
 ## How to use SherpaKinematics.C?
 
