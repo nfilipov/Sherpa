@@ -234,7 +234,7 @@ void SherpaKinematics()
 	
       for( pt = _photonpt->begin(), eta = _photoneta->begin(), phi = _photonphi->begin(), m = _photonm->begin();
 	   pt < _photonpt->end() && eta < _photoneta->end() && phi < _photonphi->end() && m < _photonm->end();
-	   ++pt, ++eta, ++phi, ++m )
+	   ++pt, ++eta, ++phi, ++m ) // C++ is great
 	{
 	    
 	  _dRpp = 0;
@@ -297,6 +297,10 @@ void SherpaKinematics()
 	}
     }
 
+	  
+  ///
+  /// setting styles for the lepton plus / minus kinematics comparisons.
+  ///
    
     hLeptonPlusEta[i]->SetFillStyle(3001);
     hLeptonMinusEta[i]->SetFillStyle(3001);
@@ -319,6 +323,9 @@ void SherpaKinematics()
     hLeptonPlusPhi[i]->SetMarkerSize(0);
     hLeptonMinusPhi[i]->SetMarkerSize(0);
     
+  ///
+  /// drawing things
+  ///
     hPhotonPt[i]->Draw();
     hPhotonEta[i]->Draw();
     hPhotonPhi[i]->Draw();
@@ -352,8 +359,13 @@ void SherpaKinematics()
     //   f->Close();
     //   t->Reset();
     std::cout << "itt vagyok" << std::endl;
+	  
+  /// saving raw histograms to the output root file
+  ///
+
     plots.Write();
 
+	  // not the most crucial thing in the world 
     TCanvas cLepPMEta; cLepPMEta.cd();
     hLeptonPlusEta[i]->Draw("e2"); hLeptonMinusEta[i]->Draw("e2same");
     //   cLepPMEta.SaveAs("cLepPM_eta_"+Trees[i]+".C");
@@ -374,6 +386,11 @@ void SherpaKinematics()
   std::cout << "Ahhh" << std::endl;
   //  hPhotonPt->Draw();
 }
+
+  ///
+  /// overlaying Madgraph and Sherpa histograms
+  ///
+
 void overlays(){
   setTDRStyle();
   TFile *madgraph = TFile::Open("ZG_madgraph_histos.root","READ");
@@ -572,7 +589,7 @@ void drawPlots(){
   /*  heppt->SetFillStyle(3001);
   hmuppt->SetFillStyle(3001);
   htauppt->SetFillStyle(3001);
-  */
+				  */
   heppt->SetMarkerSize(0);
   hmuppt->SetMarkerSize(0);
   htauppt->SetMarkerSize(0);
@@ -1318,6 +1335,8 @@ void plotMG(){
   TH1D* hTTPhi = new TH1D("hTTPhi",";#phi_{#tau#tau}",50,-3.1415926536,-3.1415926536);
 
   //  TTreeReaderValue<Long64_t> rvEventNum_EPhoton_Ptber(myReader, "Event.Number");
+	
+	// particular way of accessing the event content in the madgraph file. equivalent to SetBranchAddress
   TTreeReaderValue<Int_t> rvParticle_size(myReader, "Particle_size");
   TTreeReaderArray<Int_t> raParticlePID(myReader, "Particle.PID");
   TTreeReaderArray<Int_t> raParticleStatus(myReader, "Particle.Status");
@@ -1510,7 +1529,7 @@ void plotMG(){
 }
 
 void draw_overlay(TH1D* a, TH1D* b, string particle, string observable, string channel){
- // photon
+ // straightforward macro : takes TH1 a and b, plots them together and computes the ratio in a lower panel. output is saved to C, PDF, PNG formats
 
   TH1D * num = new TH1D(); num = (TH1D*) a->Clone();
   TH1D * den = new TH1D(); den = (TH1D*) b->Clone();
@@ -1550,6 +1569,7 @@ void draw_overlay(TH1D* a, TH1D* b, string particle, string observable, string c
   leg->SetLineWidth(1);
   //   leg2->SetFillColor(0);
   leg->SetFillStyle(0);
+	/// The legend entries are hardcoded for now, 'cause we only compared Sherpa and MG together
   TLegendEntry *legentry1 = leg->AddEntry(num->GetName(),"Sherpa","f");
   // legentry1->SetLineColor(1);
   // legentry1->SetLineStyle(1);
