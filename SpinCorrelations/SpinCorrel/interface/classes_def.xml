@@ -1,0 +1,4 @@
+<lcgdict>
+  <class name="SpinCorrel"/>
+  <class name="TFWLiteSelector<SpinCorrelWorker>"/>
+</lcgdict>
