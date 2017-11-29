@@ -10,7 +10,11 @@ Sherpa spin correlation studies [https://github.com/nfilipov/Sherpa/tree/master/
 
 Sherpa analysis and comparison to Madgraph [https://github.com/nfilipov/Sherpa/tree/master/Sherpa]
 
-# Sherpa analysis and comparison to Madgraph
+# Gridpacks and python configs
+
+# Spin correlation studies
+
+# Analysis and comparison to Madgraph
 
 ## How to use SherpaKinematics.C?
 
